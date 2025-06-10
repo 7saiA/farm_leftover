@@ -32,11 +32,16 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDto updateProductById(String productId, NewProductDto newProductDto) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
-        if (newProductDto.getProductName() != null && newProductDto.getPricePerUnit() != null
-        && newProductDto.getUnit() != null && newProductDto.getAvailableQuantity() != null) {
+        if(newProductDto.getProductName() != null){
             product.setProductName(newProductDto.getProductName());
+        }
+        if(newProductDto.getPricePerUnit() != null){
             product.setPricePerUnit(newProductDto.getPricePerUnit());
+        }
+        if(newProductDto.getUnit() != null){
             product.setUnit(newProductDto.getUnit());
+        }
+        if(newProductDto.getAvailableQuantity() != null){
             product.setAvailableQuantity(newProductDto.getAvailableQuantity());
         }
         product = productRepository.save(product);

@@ -16,6 +16,7 @@ public class Customer {
     String customerId;
     @Setter
     String customerName;
+    @Setter
     String email;
     @Setter
     String password;

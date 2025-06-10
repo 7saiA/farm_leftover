@@ -18,6 +18,7 @@ public class Farm {
     String farmId;
     @Setter
     String farmName;
+    @Setter
     String email;
     @Setter
     String password;

@@ -33,14 +33,25 @@ public class FarmServiceImpl implements FarmService {
     @Override
     public FarmDto updateFarm(String farmId, NewFarmDto newFarmDto) {
         Farm farm = farmRepository.findById(farmId).orElseThrow(() -> new FarmNotFoundException(farmId));
-        if (newFarmDto.getFarmName() != null && newFarmDto.getPassword() != null && newFarmDto.getCity() != null
-        && newFarmDto.getStreet() != null && newFarmDto.getPhone() != null
-        && newFarmDto.getProducts() != null) {
+        if(newFarmDto.getFarmName() != null){
             farm.setFarmName(newFarmDto.getFarmName());
+        }
+        if(newFarmDto.getEmail() != null){
+            farm.setEmail(newFarmDto.getEmail());
+        }
+        if(newFarmDto.getPassword() != null){
             farm.setPassword(newFarmDto.getPassword());
+        }
+        if(newFarmDto.getCity() != null){
             farm.setCity(newFarmDto.getCity());
+        }
+        if(newFarmDto.getStreet() != null){
             farm.setStreet(newFarmDto.getStreet());
+        }
+        if(newFarmDto.getPhone() != null){
             farm.setPhone(newFarmDto.getPhone());
+        }
+        if(newFarmDto.getProducts() != null){
             farm.setProducts(newFarmDto.getProducts());
         }
         farm = farmRepository.save(farm);
