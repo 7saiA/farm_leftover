@@ -2,6 +2,7 @@ package ashteam.farm_leftover.product.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 
 @Getter
 @NoArgsConstructor
@@ -9,6 +10,9 @@ import lombok.*;
 @Entity
 public class Product {
     @Id
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(columnDefinition = "VARCHAR(36)")
     String productId;
     String farmId;
     @Setter

@@ -61,7 +61,8 @@ public class FarmServiceImpl implements FarmService {
     @Override
     public FarmDto deleteFarm(String farmId) {
         Farm farm = farmRepository.findById(farmId).orElseThrow(() -> new FarmNotFoundException(farmId));
+        FarmDto dto = modelMapper.map(farm, FarmDto.class);
         farmRepository.deleteById(farmId);
-        return modelMapper.map(farm, FarmDto.class);
+        return dto;
     }
 }
