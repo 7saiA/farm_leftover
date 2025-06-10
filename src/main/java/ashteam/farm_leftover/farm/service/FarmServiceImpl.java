@@ -1,0 +1,56 @@
+package ashteam.farm_leftover.farm.service;
+
+import ashteam.farm_leftover.farm.dao.FarmRepository;
+import ashteam.farm_leftover.farm.dto.FarmDto;
+import ashteam.farm_leftover.farm.dto.NewFarmDto;
+import ashteam.farm_leftover.farm.dto.exceptions.FarmNotFoundException;
+import ashteam.farm_leftover.farm.model.Farm;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class FarmServiceImpl implements FarmService {
+
+    final FarmRepository farmRepository;
+    final ModelMapper modelMapper;
+
+    @Override
+    public FarmDto createFarm(NewFarmDto newFarmDto) {
+        Farm farm = new Farm(newFarmDto.getFarmName(), newFarmDto.getEmail(), newFarmDto.getPassword(), newFarmDto.getCity(),
+                newFarmDto.getStreet(), newFarmDto.getPhone(), newFarmDto.getProducts());
+        farm = farmRepository.save(farm);
+        return modelMapper.map(farm, FarmDto.class);
+    }
+
+    @Override
+    public FarmDto findFarmById(String farmId) {
+        Farm farm = farmRepository.findById(farmId).orElseThrow(() -> new FarmNotFoundException(farmId));
+        return modelMapper.map(farm, FarmDto.class);
+    }
+
+    @Override
+    public FarmDto updateFarm(String farmId, NewFarmDto newFarmDto) {
+        Farm farm = farmRepository.findById(farmId).orElseThrow(() -> new FarmNotFoundException(farmId));
+        if (newFarmDto.getFarmName() != null && newFarmDto.getPassword() != null && newFarmDto.getCity() != null
+        && newFarmDto.getStreet() != null && newFarmDto.getPhone() != null
+        && newFarmDto.getProducts() != null) {
+            farm.setFarmName(newFarmDto.getFarmName());
+            farm.setPassword(newFarmDto.getPassword());
+            farm.setCity(newFarmDto.getCity());
+            farm.setStreet(newFarmDto.getStreet());
+            farm.setPhone(newFarmDto.getPhone());
+            farm.setProducts(newFarmDto.getProducts());
+        }
+        farm = farmRepository.save(farm);
+        return modelMapper.map(farm, FarmDto.class);
+    }
+
+    @Override
+    public FarmDto deleteFarm(String farmId) {
+        Farm farm = farmRepository.findById(farmId).orElseThrow(() -> new FarmNotFoundException(farmId));
+        farmRepository.deleteById(farmId);
+        return modelMapper.map(farm, FarmDto.class);
+    }
+}
