@@ -23,6 +23,11 @@ public class ProductController {
         return productService.findProductByName(productId);
     }
 
+    @GetMapping
+    public Iterable<ProductDto> findAllProducts(){
+        return productService.findAllProducts();
+    }
+
     @PutMapping("/{productId}")
     public ProductDto updateProductById(@PathVariable String productId, @RequestBody NewProductDto newProductDto) {
         return productService.updateProductById(productId, newProductDto);

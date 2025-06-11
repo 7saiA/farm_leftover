@@ -3,9 +3,11 @@ package ashteam.farm_leftover.farm.controller;
 import ashteam.farm_leftover.farm.dto.FarmDto;
 import ashteam.farm_leftover.farm.dto.NewFarmDto;
 import ashteam.farm_leftover.farm.service.FarmService;
+import ashteam.farm_leftover.product.dto.ProductDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/farms")

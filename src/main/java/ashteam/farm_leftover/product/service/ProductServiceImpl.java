@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
@@ -53,5 +55,12 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
         productRepository.deleteById(productId);
         return modelMapper.map(product, ProductDto.class);
+    }
+
+    @Override
+    public Iterable<ProductDto> findAllProducts() {
+        return productRepository.findAll().stream()
+                .map(p -> modelMapper.map(p, ProductDto.class))
+                .collect(Collectors.toSet());
     }
 }

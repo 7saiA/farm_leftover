@@ -11,4 +11,6 @@ public interface ProductService {
     ProductDto updateProductById(String productId, NewProductDto newProductDto);
 
     ProductDto deleteProduct(String productId);
+
+    Iterable<ProductDto> findAllProducts();
 }
