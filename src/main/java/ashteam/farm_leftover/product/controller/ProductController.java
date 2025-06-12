@@ -14,27 +14,27 @@ public class ProductController {
     final ProductService productService;
 
     @PostMapping("/{farmId}")
-    public ProductDto addProduct(@PathVariable Integer farmId, @RequestBody NewProductDto newProductDto) {
+    public ProductDto addProduct(@PathVariable Long farmId, @RequestBody NewProductDto newProductDto) {
         return productService.addProduct(farmId, newProductDto);
     }
 
     @GetMapping("/{productId}")
-    public ProductDto findProductByName(@PathVariable Integer productId) {
+    public ProductDto findProductByName(@PathVariable Long productId) {
         return productService.findProductByName(productId);
+    }
+
+    @PutMapping("/{productId}")
+    public ProductDto updateProductById(@PathVariable Long productId, @RequestBody NewProductDto newProductDto) {
+        return productService.updateProductById(productId, newProductDto);
+    }
+
+    @DeleteMapping("/{productId}")
+    public ProductDto deleteProduct(@PathVariable Long productId) {
+        return productService.deleteProduct(productId);
     }
 
     @GetMapping
     public Iterable<ProductDto> findAllProducts(){
         return productService.findAllProducts();
-    }
-
-    @PutMapping("/{productId}")
-    public ProductDto updateProductById(@PathVariable Integer productId, @RequestBody NewProductDto newProductDto) {
-        return productService.updateProductById(productId, newProductDto);
-    }
-
-    @DeleteMapping("/{productId}")
-    public ProductDto deleteProduct(@PathVariable Integer productId) {
-        return productService.deleteProduct(productId);
     }
 }

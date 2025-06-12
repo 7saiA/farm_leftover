@@ -1,18 +1,20 @@
-package ashteam.farm_leftover.farm.dto;
+package ashteam.farm_leftover.user.dto;
 
 import ashteam.farm_leftover.product.model.Product;
+import ashteam.farm_leftover.user.model.RoleUser;
 import lombok.Getter;
 
 import java.util.Set;
 
 @Getter
-public class FarmDto {
-    Integer farmId;
-    String farmName;
+public class UserDto {
+    Long id;
+    String name;
     String email;
     String password;
+    String phone;
+    RoleUser roleUser;
     String city;
     String street;
-    String phone;
     Set<Product> products;
 }

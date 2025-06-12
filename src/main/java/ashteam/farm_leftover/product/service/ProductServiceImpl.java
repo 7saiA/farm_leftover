@@ -5,6 +5,9 @@ import ashteam.farm_leftover.product.dto.NewProductDto;
 import ashteam.farm_leftover.product.dto.ProductDto;
 import ashteam.farm_leftover.product.dto.exceptions.ProductNotFoundException;
 import ashteam.farm_leftover.product.model.Product;
+import ashteam.farm_leftover.user.dao.UserRepository;
+import ashteam.farm_leftover.user.dto.exceptions.UserNotFoundException;
+import ashteam.farm_leftover.user.model.UserAccount;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -16,23 +19,35 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
 
     final ProductRepository productRepository;
+    final UserRepository userRepository;
     final ModelMapper modelMapper;
 
     @Override
-    public ProductDto addProduct(Integer farmId, NewProductDto newProductDto) {
-        Product product = new Product(farmId, newProductDto.getProductName(), newProductDto.getPricePerUnit(), newProductDto.getUnit(), newProductDto.getAvailableQuantity());
-        product = productRepository.save(product);
+    public ProductDto addProduct(Long farmId, NewProductDto newProductDto) {
+        UserAccount user = userRepository.findById(farmId)
+                .orElseThrow(() -> new UserNotFoundException(farmId));
+
+        Product product = new Product(
+                newProductDto.getProductName(),
+                newProductDto.getPricePerUnit(),
+                newProductDto.getUnit(),
+                newProductDto.getAvailableQuantity()
+        );
+
+        user.addProduct(product);
+        productRepository.save(product);
+
         return modelMapper.map(product, ProductDto.class);
     }
 
     @Override
-    public ProductDto findProductByName(Integer productId) {
+    public ProductDto findProductByName(Long productId) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
         return modelMapper.map(product, ProductDto.class);
     }
 
     @Override
-    public ProductDto updateProductById(Integer productId, NewProductDto newProductDto) {
+    public ProductDto updateProductById(Long productId, NewProductDto newProductDto) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
         if(newProductDto.getProductName() != null){
             product.setProductName(newProductDto.getProductName());
@@ -51,7 +66,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDto deleteProduct(Integer productId) {
+    public ProductDto deleteProduct(Long productId) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
         productRepository.deleteById(productId);
         return modelMapper.map(product, ProductDto.class);
