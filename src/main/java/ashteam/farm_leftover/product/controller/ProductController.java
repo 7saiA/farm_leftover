@@ -14,12 +14,12 @@ public class ProductController {
     final ProductService productService;
 
     @PostMapping("/{farmId}")
-    public ProductDto addProduct(@PathVariable String farmId, @RequestBody NewProductDto newProductDto) {
+    public ProductDto addProduct(@PathVariable Integer farmId, @RequestBody NewProductDto newProductDto) {
         return productService.addProduct(farmId, newProductDto);
     }
 
     @GetMapping("/{productId}")
-    public ProductDto findProductByName(@PathVariable String productId) {
+    public ProductDto findProductByName(@PathVariable Integer productId) {
         return productService.findProductByName(productId);
     }
 
@@ -29,12 +29,12 @@ public class ProductController {
     }
 
     @PutMapping("/{productId}")
-    public ProductDto updateProductById(@PathVariable String productId, @RequestBody NewProductDto newProductDto) {
+    public ProductDto updateProductById(@PathVariable Integer productId, @RequestBody NewProductDto newProductDto) {
         return productService.updateProductById(productId, newProductDto);
     }
 
     @DeleteMapping("/{productId}")
-    public ProductDto deleteProduct(@PathVariable String productId) {
+    public ProductDto deleteProduct(@PathVariable Integer productId) {
         return productService.deleteProduct(productId);
     }
 }

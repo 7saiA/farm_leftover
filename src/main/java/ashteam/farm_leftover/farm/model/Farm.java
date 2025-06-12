@@ -16,10 +16,8 @@ import java.util.Set;
 @Entity
 public class Farm {
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    @Column(columnDefinition = "VARCHAR(36)")
-    String farmId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Integer farmId;
     @Setter
     String farmName;
     @Setter

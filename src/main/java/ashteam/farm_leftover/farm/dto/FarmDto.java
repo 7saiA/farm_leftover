@@ -7,7 +7,7 @@ import java.util.Set;
 
 @Getter
 public class FarmDto {
-    String farmId;
+    Integer farmId;
     String farmName;
     String email;
     String password;

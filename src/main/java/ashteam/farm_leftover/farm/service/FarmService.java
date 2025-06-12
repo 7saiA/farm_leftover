@@ -1,14 +1,17 @@
 package ashteam.farm_leftover.farm.service;
 
 import ashteam.farm_leftover.farm.dto.FarmDto;
+import ashteam.farm_leftover.farm.dto.FarmUpdatePasswordDto;
 import ashteam.farm_leftover.farm.dto.NewFarmDto;
 
 public interface FarmService {
     FarmDto createFarm(NewFarmDto newFarmDto);
 
-    FarmDto findFarmById(String farmId);
+    FarmDto findFarmById(Integer farmId);
 
-    FarmDto updateFarm(String farmId, NewFarmDto newFarmDto);
+    FarmDto updateFarm(Integer farmId, NewFarmDto newFarmDto);
 
-    FarmDto deleteFarm(String farmId);
+    FarmDto deleteFarm(Integer farmId);
+
+    FarmDto changePassword(Integer farmId, FarmUpdatePasswordDto farmUpdatePasswordDto);
 }

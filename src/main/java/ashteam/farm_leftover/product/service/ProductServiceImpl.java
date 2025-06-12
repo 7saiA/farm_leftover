@@ -19,20 +19,20 @@ public class ProductServiceImpl implements ProductService {
     final ModelMapper modelMapper;
 
     @Override
-    public ProductDto addProduct(String farmId, NewProductDto newProductDto) {
+    public ProductDto addProduct(Integer farmId, NewProductDto newProductDto) {
         Product product = new Product(farmId, newProductDto.getProductName(), newProductDto.getPricePerUnit(), newProductDto.getUnit(), newProductDto.getAvailableQuantity());
         product = productRepository.save(product);
         return modelMapper.map(product, ProductDto.class);
     }
 
     @Override
-    public ProductDto findProductByName(String productId) {
+    public ProductDto findProductByName(Integer productId) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
         return modelMapper.map(product, ProductDto.class);
     }
 
     @Override
-    public ProductDto updateProductById(String productId, NewProductDto newProductDto) {
+    public ProductDto updateProductById(Integer productId, NewProductDto newProductDto) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
         if(newProductDto.getProductName() != null){
             product.setProductName(newProductDto.getProductName());
@@ -51,7 +51,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDto deleteProduct(String productId) {
+    public ProductDto deleteProduct(Integer productId) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
         productRepository.deleteById(productId);
         return modelMapper.map(product, ProductDto.class);

@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public class CustomerDto {
-    String customerId;
+    Integer customerId;
     String customerName;
     String email;
     String password;

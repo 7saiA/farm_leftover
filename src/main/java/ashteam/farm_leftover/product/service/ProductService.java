@@ -4,13 +4,13 @@ import ashteam.farm_leftover.product.dto.NewProductDto;
 import ashteam.farm_leftover.product.dto.ProductDto;
 
 public interface ProductService {
-    ProductDto addProduct(String farmId, NewProductDto newProductDto);
+    ProductDto addProduct(Integer farmId, NewProductDto newProductDto);
 
-    ProductDto findProductByName(String productId);
+    ProductDto findProductByName(Integer productId);
 
-    ProductDto updateProductById(String productId, NewProductDto newProductDto);
+    ProductDto updateProductById(Integer productId, NewProductDto newProductDto);
 
-    ProductDto deleteProduct(String productId);
+    ProductDto deleteProduct(Integer productId);
 
     Iterable<ProductDto> findAllProducts();
 }

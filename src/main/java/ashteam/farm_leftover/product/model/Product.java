@@ -10,11 +10,9 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity
 public class Product {
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    @Column(columnDefinition = "VARCHAR(36)")
-    String productId;
-    String farmId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Integer productId;
+    Integer farmId;
     @Setter
     String productName;
     @Setter
@@ -24,7 +22,7 @@ public class Product {
     @Setter
     Integer availableQuantity;
 
-    public Product(String farmId, String productName, Double pricePerUnit, String unit, Integer availableQuantity) {
+    public Product(Integer farmId, String productName, Double pricePerUnit, String unit, Integer availableQuantity) {
         this.farmId = farmId;
         this.productName = productName;
         this.pricePerUnit = pricePerUnit;

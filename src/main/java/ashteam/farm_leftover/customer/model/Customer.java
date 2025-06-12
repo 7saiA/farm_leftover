@@ -1,9 +1,6 @@
 package ashteam.farm_leftover.customer.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,10 +13,8 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity
 public class Customer {
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    @Column(columnDefinition = "VARCHAR(36)")
-    String customerId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Integer customerId;
     @Setter
     String customerName;
     @Setter

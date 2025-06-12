@@ -4,8 +4,8 @@ import lombok.Getter;
 
 @Getter
 public class ProductDto {
-    String productId;
-    String farmId;
+    Integer productId;
+    Integer farmId;
     String productName;
     Double pricePerUnit;
     String unit;
