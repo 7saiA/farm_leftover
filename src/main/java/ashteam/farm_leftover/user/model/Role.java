@@ -1,5 +1,5 @@
 package ashteam.farm_leftover.user.model;
 
-public enum RoleUser {
+public enum Role {
     USER, FARM, MODERATOR, ADMIN
 }

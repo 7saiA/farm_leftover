@@ -1,12 +1,15 @@
 package ashteam.farm_leftover.user.controller;
 
-import ashteam.farm_leftover.user.dto.NewUserDto;
+import ashteam.farm_leftover.user.dto.UserRegisterDto;
 import ashteam.farm_leftover.user.dto.UpdatePasswordDto;
 import ashteam.farm_leftover.user.dto.UpdateUserDto;
 import ashteam.farm_leftover.user.dto.UserDto;
+import ashteam.farm_leftover.user.model.UserAccount;
 import ashteam.farm_leftover.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -16,28 +19,35 @@ public class UserController {
 
     final UserService userService;
 
-    @PostMapping
-    public UserDto createUser(@RequestBody NewUserDto newUserDto) {
-        return userService.createUser(newUserDto);
+    @PostMapping("/register")
+    public UserDto register(@RequestBody UserRegisterDto userRegisterDto) {
+        return userService.register(userRegisterDto);
     }
 
-    @GetMapping("/{id}")
-    public UserDto findUserById(@PathVariable Long id) {
-        return userService.findUserById(id);
+    @PostMapping("/login")
+    public UserDto login(Principal principal) {
+        return userService.getUser(principal.getName());
     }
 
-    @PutMapping("/{id}")
-    public UserDto updateUser(@PathVariable Long id, @RequestBody UpdateUserDto updateUserDto) {
-        return userService.updateUser(id, updateUserDto);
+    @GetMapping("/{login}")
+    public UserDto findUserById(@PathVariable String login) {
+        return userService.getUser(login);
     }
 
-    @DeleteMapping("/{id}")
-    public UserDto deleteUser(@PathVariable Long id) {
-        return userService.deleteUser(id);
+    @PutMapping("/{login}")
+    public UserDto updateUser(@PathVariable String login, @RequestBody UpdateUserDto updateUserDto) {
+        return userService.updateUser(login, updateUserDto);
     }
 
-    @PatchMapping("/{id}")
-    public UserDto changePassword(@PathVariable Long id, @RequestBody UpdatePasswordDto updatePasswordDto){
-        return userService.changePassword(id,updatePasswordDto);
+    @DeleteMapping("/{login}")
+    public UserDto deleteUser(@PathVariable String login) {
+        return userService.deleteUser(login);
     }
+
+    @PatchMapping("/password")
+    public UserDto changePassword(Principal principal, @RequestBody UpdatePasswordDto updatePasswordDto){
+        return userService.changePassword(principal.getName(),updatePasswordDto);
+    }
+
+
 }

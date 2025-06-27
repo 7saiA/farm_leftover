@@ -10,14 +10,12 @@ import java.util.Set;
 @Entity
 @Getter
 @NoArgsConstructor
-@EqualsAndHashCode(of = "id")
+@EqualsAndHashCode(of = "login")
 public class UserAccount {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-
     @Setter
-    String name;
+    String login;
+
     @Setter
     String email;
     @Setter
@@ -25,7 +23,7 @@ public class UserAccount {
     @Setter
     String phone;
     @Enumerated(EnumType.STRING)
-    RoleUser roleUser;
+    Set<Role> roles;
 
     //For Farm Role
     @Setter
@@ -38,21 +36,18 @@ public class UserAccount {
     @OneToMany(mappedBy = "userAccount", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<Product> products = new HashSet<>();
 
-    public UserAccount(String name, String email, String password, String phone, RoleUser roleUser) {
-        this.name = name;
+    public UserAccount(String login, String email, String password, String phone) {
+        this.login = login;
         this.email = email;
         this.password = password;
         this.phone = phone;
-        this.roleUser = roleUser;
+        roles = new HashSet<>();
+        roles.add(Role.USER);
     }
 
     //For Farm Role
-    public UserAccount(String name, String email, String password, String phone, RoleUser roleUser, String farmName, String city, String street, Set<Product> products) {
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        this.phone = phone;
-        this.roleUser = roleUser;
+    public UserAccount(String login, String email, String password, String phone, Role role, String farmName, String city, String street, Set<Product> products) {
+        this();
         this.farmName = farmName;
         this.city = city;
         this.street = street;
@@ -73,5 +68,13 @@ public class UserAccount {
         }
         products.remove(product);
         product.setUser(null);
+    }
+
+    public boolean addRole(String role){
+        return roles.add(Role.valueOf(role.toUpperCase()));
+    }
+
+    public boolean removeRole(String role){
+        return roles.remove(Role.valueOf(role.toUpperCase()));
     }
 }
