@@ -1,9 +1,6 @@
 package ashteam.farm_leftover.user.controller;
 
-import ashteam.farm_leftover.user.dto.UserRegisterDto;
-import ashteam.farm_leftover.user.dto.UpdatePasswordDto;
-import ashteam.farm_leftover.user.dto.UpdateUserDto;
-import ashteam.farm_leftover.user.dto.UserDto;
+import ashteam.farm_leftover.user.dto.*;
 import ashteam.farm_leftover.user.model.UserAccount;
 import ashteam.farm_leftover.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +22,8 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public UserDto login(Principal principal) {
-        return userService.getUser(principal.getName());
+    public UserLoginResponseDto login(@RequestBody UserLoginDto userLoginDto) {
+        return userService.login(userLoginDto);
     }
 
     @GetMapping("/{login}")

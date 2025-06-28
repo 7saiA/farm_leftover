@@ -23,7 +23,7 @@ public class ProductServiceImpl implements ProductService {
     final ModelMapper modelMapper;
 
     @Override
-    public ProductDto addProduct(Long farmId, NewProductDto newProductDto) {
+    public ProductDto addProduct(String farmId, NewProductDto newProductDto) {
         UserAccount user = userRepository.findById(farmId)
                 .orElseThrow(() -> new UserNotFoundException(farmId));
 

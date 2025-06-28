@@ -15,7 +15,7 @@ public class ProductController {
     final ProductService productService;
 
     @PostMapping("/{farmId}")
-    public ProductDto addProduct(@PathVariable Long farmId, @RequestBody NewProductDto newProductDto) {
+    public ProductDto addProduct(@PathVariable String farmId, @RequestBody NewProductDto newProductDto) {
         return productService.addProduct(farmId, newProductDto);
     }
 

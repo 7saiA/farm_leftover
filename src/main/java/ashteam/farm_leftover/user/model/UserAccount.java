@@ -7,6 +7,7 @@ import lombok.*;
 import java.util.HashSet;
 import java.util.Set;
 
+
 @Entity
 @Getter
 @NoArgsConstructor
@@ -15,7 +16,6 @@ public class UserAccount {
     @Id
     @Setter
     String login;
-
     @Setter
     String email;
     @Setter
@@ -23,7 +23,7 @@ public class UserAccount {
     @Setter
     String phone;
     @Enumerated(EnumType.STRING)
-    Set<Role> roles;
+    Set<Role> roles = new HashSet<>();
 
     //For Farm Role
     @Setter
@@ -41,7 +41,6 @@ public class UserAccount {
         this.email = email;
         this.password = password;
         this.phone = phone;
-        roles = new HashSet<>();
         roles.add(Role.USER);
     }
 

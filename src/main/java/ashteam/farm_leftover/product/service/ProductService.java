@@ -4,7 +4,7 @@ import ashteam.farm_leftover.product.dto.NewProductDto;
 import ashteam.farm_leftover.product.dto.ProductDto;
 
 public interface ProductService {
-    ProductDto addProduct(Long farmId, NewProductDto newProductDto);
+    ProductDto addProduct(String farmId, NewProductDto newProductDto);
 
     ProductDto findProductByName(Long productId);
 
