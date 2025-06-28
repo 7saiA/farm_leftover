@@ -6,10 +6,10 @@ import ashteam.farm_leftover.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/products")
-@CrossOrigin(origins = "http://localhost:5173")
 public class ProductController {
 
     final ProductService productService;

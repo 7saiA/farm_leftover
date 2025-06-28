@@ -8,4 +8,8 @@ public class UserRegisterDto {
     String email;
     String password;
     String phone;
+
+    String farmName;
+    String city;
+    String street;
 }

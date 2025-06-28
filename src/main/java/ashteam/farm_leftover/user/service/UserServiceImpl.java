@@ -29,10 +29,18 @@ public class UserServiceImpl implements UserService{
         if(userRegisterDto.getLogin().matches(".*[^a-zA-Z0-9].*")){
             throw new UserExistsException(userRegisterDto.getLogin());
         }
-        String hashedPassword = BCrypt.hashpw(userRegisterDto.getPassword(), BCrypt.gensalt(12));
-        UserAccount user = new UserAccount(userRegisterDto.getLogin(), userRegisterDto.getEmail(), hashedPassword, userRegisterDto.getPhone());
-        user = userRepository.save(user);
-        return modelMapper.map(user, UserDto.class);
+        if (userRegisterDto.getFarmName() == null) {
+            String hashedPassword = BCrypt.hashpw(userRegisterDto.getPassword(), BCrypt.gensalt(12));
+            UserAccount user = new UserAccount(userRegisterDto.getLogin(), userRegisterDto.getEmail(), hashedPassword, userRegisterDto.getPhone());
+            user = userRepository.save(user);
+            return modelMapper.map(user, UserDto.class);
+        } else {
+            String hashedPassword = BCrypt.hashpw(userRegisterDto.getPassword(), BCrypt.gensalt(12));
+            UserAccount user = new UserAccount(userRegisterDto.getLogin(), userRegisterDto.getEmail(), hashedPassword, userRegisterDto.getPhone(),
+                    userRegisterDto.getFarmName(), userRegisterDto.getCity(), userRegisterDto.getStreet());
+            user = userRepository.save(user);
+            return modelMapper.map(user, UserDto.class);
+        }
     }
 
     @Override

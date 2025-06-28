@@ -45,12 +45,16 @@ public class UserAccount {
     }
 
     //For Farm Role
-    public UserAccount(String login, String email, String password, String phone, Role role, String farmName, String city, String street, Set<Product> products) {
-        this();
+    public UserAccount(String login, String email, String password, String phone, String farmName, String city, String street) {
+        this.login = login;
+        this.email = email;
+        this.password = password;
+        this.phone = phone;
+        roles.add(Role.FARM);
         this.farmName = farmName;
         this.city = city;
         this.street = street;
-        this.products = products;
+        roles.add(Role.FARM);
     }
 
     public void addProduct(Product product) {
