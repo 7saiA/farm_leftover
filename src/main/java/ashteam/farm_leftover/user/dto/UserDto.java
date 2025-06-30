@@ -13,6 +13,7 @@ public class UserDto {
     String password;
     String phone;
     Role role;
+    String farmName;
     String city;
     String street;
     Set<Product> products;
