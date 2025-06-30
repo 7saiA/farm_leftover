@@ -9,4 +9,5 @@ public interface UserService {
     UserDto deleteUser(String login);
     UserDto changePassword(String login, UpdatePasswordDto updatePasswordDto);
     UserLoginResponseDto login(UserLoginDto userLoginDto);
+    UserLoginResponseDto refreshAccessToken(String refreshToken);
 }

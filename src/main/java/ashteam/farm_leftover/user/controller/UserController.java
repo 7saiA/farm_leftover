@@ -26,6 +26,11 @@ public class UserController {
         return userService.login(userLoginDto);
     }
 
+    @PostMapping("/refresh")
+    public UserLoginResponseDto refreshToken(@RequestBody UserRefreshTokenRequestDto refreshTokenRequestDto){
+        return userService.refreshAccessToken(refreshTokenRequestDto.getRefreshToken());
+    }
+
     @GetMapping("/{login}")
     public UserDto findUserById(@PathVariable String login) {
         return userService.getUser(login);

@@ -9,9 +9,13 @@ import ashteam.farm_leftover.user.dto.exceptions.UserIncorrectOldPasswordExcepti
 import ashteam.farm_leftover.user.dto.exceptions.UserNotFoundException;
 import ashteam.farm_leftover.user.model.UserAccount;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.modelmapper.ModelMapper;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +45,32 @@ public class UserServiceImpl implements UserService{
             user = userRepository.save(user);
             return modelMapper.map(user, UserDto.class);
         }
+    }
+
+    @Override
+    public UserLoginResponseDto login(UserLoginDto userLoginDto) {
+        UserAccount user = userRepository.findById(userLoginDto.getLogin()).orElseThrow(() -> new UnauthorizedException("Invalid Credentials"));
+        if(!BCrypt.checkpw(userLoginDto.getPassword(),user.getPassword())){
+            throw new UnauthorizedException("Invalid Password");
+        }
+        String accessToken = jwtService.generateAccessToken(user.getLogin());
+        String refreshToken = jwtService.generateRefreshToken(user.getLogin());
+
+        return new UserLoginResponseDto(user.getLogin(),user.getRoles(),accessToken,refreshToken);
+    }
+
+    @Override
+    public UserLoginResponseDto refreshAccessToken(String refreshToken) {
+        String username = jwtService.extractUsernameFromRefreshToken(refreshToken);
+        UserAccount user = userRepository.findById(username).orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
+
+        UserDetails tempUser = new User(user.getLogin(),user.getPassword(), List.of());
+        if(!jwtService.isRefreshTokenValid(refreshToken,tempUser)){
+            throw new UnauthorizedException("Invalid refresh token");
+        }
+
+        String newAccessToken = jwtService.generateAccessToken(user.getLogin());
+        return new UserLoginResponseDto(user.getLogin(),user.getRoles(), newAccessToken, refreshToken);
     }
 
     @Override
@@ -76,17 +106,5 @@ public class UserServiceImpl implements UserService{
         user.setPassword(BCrypt.hashpw(updatePasswordDto.getPassword(), BCrypt.gensalt(12)));
         userRepository.save(user);
         return modelMapper.map(user, UserDto.class);
-    }
-
-    @Override
-    public UserLoginResponseDto login(UserLoginDto userLoginDto) {
-        UserAccount user = userRepository.findById(userLoginDto.getLogin()).orElseThrow(() -> new UnauthorizedException("Invalid Credentials"));
-        if(!BCrypt.checkpw(userLoginDto.getPassword(),user.getPassword())){
-            throw new UnauthorizedException("Invalid Password");
-        }
-        String accessToken = jwtService.generateAccessToken(user.getLogin());
-        String refreshToken = jwtService.generateRefreshToken(user.getLogin());
-
-        return new UserLoginResponseDto(user.getLogin(),user.getRoles(),accessToken,refreshToken);
     }
 }
