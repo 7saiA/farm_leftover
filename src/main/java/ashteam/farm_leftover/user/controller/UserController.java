@@ -31,6 +31,11 @@ public class UserController {
         return userService.refreshAccessToken(refreshTokenRequestDto.getRefreshToken());
     }
 
+    @GetMapping("/profile}")
+    public UserDto getCurrentUser(Principal principal){
+        return userService.getUser(principal.getName());
+    }
+
     @GetMapping("/{login}")
     public UserDto findUserById(@PathVariable String login) {
         return userService.getUser(login);
