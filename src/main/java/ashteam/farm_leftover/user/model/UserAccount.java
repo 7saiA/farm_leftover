@@ -22,6 +22,7 @@ public class UserAccount {
     String password;
     @Setter
     String phone;
+    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     Set<Role> roles = new HashSet<>();
 
@@ -54,7 +55,6 @@ public class UserAccount {
         this.farmName = farmName;
         this.city = city;
         this.street = street;
-        roles.add(Role.FARM);
     }
 
     public void addProduct(Product product) {

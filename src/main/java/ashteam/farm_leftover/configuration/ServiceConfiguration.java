@@ -2,6 +2,7 @@ package ashteam.farm_leftover.configuration;
 
 import ashteam.farm_leftover.product.dto.ProductDto;
 import ashteam.farm_leftover.product.model.Product;
+import ashteam.farm_leftover.user.dto.UserDto;
 import ashteam.farm_leftover.user.dto.UserForProductDto;
 import ashteam.farm_leftover.user.model.UserAccount;
 import org.modelmapper.ModelMapper;
@@ -20,10 +21,8 @@ public class ServiceConfiguration {
                 .setFieldMatchingEnabled(true)
                 .setFieldAccessLevel(AccessLevel.PRIVATE)
                 .setMatchingStrategy(MatchingStrategies.STRICT);
-        // Маппинг из UserAccount (entity) в UserForProductDto (DTO)
         modelMapper.createTypeMap(UserAccount.class, UserForProductDto.class);
-
-        // Маппинг из Product в ProductDto с учетом преобразования UserAccount в UserForProductDto
+        modelMapper.createTypeMap(UserAccount.class, UserDto.class);
         modelMapper.typeMap(Product.class, ProductDto.class)
                 .addMappings(mapper -> mapper.map(Product::getUserAccount, ProductDto::setUserForProductDto));
         return modelMapper;

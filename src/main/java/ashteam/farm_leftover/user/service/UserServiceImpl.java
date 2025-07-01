@@ -36,6 +36,7 @@ public class UserServiceImpl implements UserService{
         if (userRegisterDto.getFarmName() == null) {
             String hashedPassword = BCrypt.hashpw(userRegisterDto.getPassword(), BCrypt.gensalt(12));
             UserAccount user = new UserAccount(userRegisterDto.getLogin(), userRegisterDto.getEmail(), hashedPassword, userRegisterDto.getPhone());
+            UserDto dto = new UserDto();
             user = userRepository.save(user);
             return modelMapper.map(user, UserDto.class);
         } else {

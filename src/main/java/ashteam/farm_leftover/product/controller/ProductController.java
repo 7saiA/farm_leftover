@@ -22,7 +22,7 @@ public class ProductController {
     }
 
     @GetMapping("/myProducts")
-    public Iterable<ProductDto> findProductsById(Principal principal){
+    public Iterable<ProductDto> findProductsByFarmId(Principal principal){
         return productService.findProductsByFarm(principal.getName());
     }
 

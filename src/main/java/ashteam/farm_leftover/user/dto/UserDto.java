@@ -12,7 +12,7 @@ public class UserDto {
     String email;
     String password;
     String phone;
-    Role role;
+    Set<Role> roles;
     String farmName;
     String city;
     String street;
