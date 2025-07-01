@@ -78,4 +78,12 @@ public class ProductServiceImpl implements ProductService {
                 .map(p -> modelMapper.map(p, ProductDto.class))
                 .collect(Collectors.toSet());
     }
+
+    @Override
+    public Iterable<ProductDto> findProductsByFarm(String name) {
+        return productRepository.findAllByUserAccountLogin(name)
+                .stream()
+                .map(p -> modelMapper.map(p, ProductDto.class))
+                .toList();
+    }
 }

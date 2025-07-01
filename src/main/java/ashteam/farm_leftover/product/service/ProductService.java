@@ -13,4 +13,6 @@ public interface ProductService {
     ProductDto deleteProduct(Long productId);
 
     Iterable<ProductDto> findAllProducts();
+
+    Iterable<ProductDto> findProductsByFarm(String name);
 }

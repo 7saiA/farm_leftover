@@ -6,6 +6,8 @@ import ashteam.farm_leftover.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @CrossOrigin(origins = "*")
 @RestController
 @RequiredArgsConstructor
@@ -17,6 +19,11 @@ public class ProductController {
     @PostMapping("/{farmId}")
     public ProductDto addProduct(@PathVariable String farmId, @RequestBody NewProductDto newProductDto) {
         return productService.addProduct(farmId, newProductDto);
+    }
+
+    @GetMapping("/myProducts")
+    public Iterable<ProductDto> findProductsById(Principal principal){
+        return productService.findProductsByFarm(principal.getName());
     }
 
     @GetMapping("/{productId}")
