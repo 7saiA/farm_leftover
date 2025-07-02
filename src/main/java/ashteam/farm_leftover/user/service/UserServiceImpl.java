@@ -36,7 +36,6 @@ public class UserServiceImpl implements UserService{
         if (userRegisterDto.getFarmName() == null) {
             String hashedPassword = BCrypt.hashpw(userRegisterDto.getPassword(), BCrypt.gensalt(12));
             UserAccount user = new UserAccount(userRegisterDto.getLogin(), userRegisterDto.getEmail(), hashedPassword, userRegisterDto.getPhone());
-            UserDto dto = new UserDto();
             user = userRepository.save(user);
             return modelMapper.map(user, UserDto.class);
         } else {
@@ -75,9 +74,10 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public UserDto getUser(String login) {
-        UserAccount user = userRepository.findById(login).orElseThrow(() -> new UserNotFoundException(login));
-        return modelMapper.map(user, UserDto.class);
+    public UserProfileDto getUser(String login) {
+        UserAccount user = userRepository.findById(login)
+                .orElseThrow(() -> new UserNotFoundException(login));
+        return modelMapper.map(user, UserProfileDto.class);
     }
 
     @Override

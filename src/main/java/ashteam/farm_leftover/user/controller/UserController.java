@@ -1,7 +1,6 @@
 package ashteam.farm_leftover.user.controller;
 
 import ashteam.farm_leftover.user.dto.*;
-import ashteam.farm_leftover.user.model.UserAccount;
 import ashteam.farm_leftover.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -32,12 +31,12 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public UserDto getCurrentUser(Principal principal){
+    public UserProfileDto getCurrentUser(Principal principal){
         return userService.getUser(principal.getName());
     }
 
     @GetMapping("/{login}")
-    public UserDto findUserById(@PathVariable String login) {
+    public UserProfileDto findUserById(@PathVariable String login) {
         return userService.getUser(login);
     }
 
