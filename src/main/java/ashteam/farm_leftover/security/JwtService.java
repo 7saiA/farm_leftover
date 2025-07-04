@@ -25,7 +25,7 @@ public class JwtService {
         return Jwts.builder()
                 .claim("sub", login)
                 .claim("iat", System.currentTimeMillis() / 1000)  // issued at (seconds)
-                .claim("exp", (System.currentTimeMillis() / 1000) + 15 * 60)  // expires in 10 seconds
+                .claim("exp", (System.currentTimeMillis() / 1000) + 15 * 60)
                 .signWith(accessTokenKey)
                 .compact();
     }

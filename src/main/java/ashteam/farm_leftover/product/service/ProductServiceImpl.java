@@ -11,6 +11,7 @@ import ashteam.farm_leftover.user.model.UserAccount;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.stream.Collectors;
 
@@ -22,6 +23,7 @@ public class ProductServiceImpl implements ProductService {
     final UserRepository userRepository;
     final ModelMapper modelMapper;
 
+    @Transactional
     @Override
     public ProductDto addProduct(String farmId, NewProductDto newProductDto) {
         UserAccount user = userRepository.findById(farmId)
@@ -40,12 +42,14 @@ public class ProductServiceImpl implements ProductService {
         return modelMapper.map(product, ProductDto.class);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ProductDto findProductByName(Long productId) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
         return modelMapper.map(product, ProductDto.class);
     }
 
+    @Transactional
     @Override
     public ProductDto updateProductById(Long productId, NewProductDto newProductDto) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
@@ -65,6 +69,7 @@ public class ProductServiceImpl implements ProductService {
         return modelMapper.map(product, ProductDto.class);
     }
 
+    @Transactional
     @Override
     public ProductDto deleteProduct(Long productId) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
@@ -72,6 +77,7 @@ public class ProductServiceImpl implements ProductService {
         return modelMapper.map(product, ProductDto.class);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Iterable<ProductDto> findAllProducts() {
         return productRepository.findAll().stream()
@@ -79,6 +85,7 @@ public class ProductServiceImpl implements ProductService {
                 .collect(Collectors.toSet());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Iterable<ProductDto> findProductsByFarm(String name) {
         return productRepository.findAllByUserAccountLogin(name)

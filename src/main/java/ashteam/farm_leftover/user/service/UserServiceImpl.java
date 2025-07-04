@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.modelmapper.ModelMapper;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -26,6 +27,7 @@ public class UserServiceImpl implements UserService{
     final ModelMapper modelMapper;
     private final JwtService jwtService;
 
+    @Transactional
     @Override
     public UserDto register(UserRegisterDto userRegisterDto) {
         if (userRepository.existsById(userRegisterDto.getLogin())) {
@@ -48,6 +50,7 @@ public class UserServiceImpl implements UserService{
         }
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserLoginResponseDto login(UserLoginDto userLoginDto) {
         UserAccount user = userRepository.findById(userLoginDto.getLogin()).orElseThrow(() -> new UnauthorizedException("Invalid Credentials"));
@@ -60,6 +63,7 @@ public class UserServiceImpl implements UserService{
         return new UserLoginResponseDto(user.getLogin(),user.getRoles(),accessToken,refreshToken);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserLoginResponseDto refreshAccessToken(String refreshToken) {
         String username = jwtService.extractUsernameFromRefreshToken(refreshToken);
@@ -74,6 +78,7 @@ public class UserServiceImpl implements UserService{
         return new UserLoginResponseDto(user.getLogin(),user.getRoles(), newAccessToken, refreshToken);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserProfileDto getUser(String login) {
         UserAccount user = userRepository.findById(login)
@@ -81,6 +86,7 @@ public class UserServiceImpl implements UserService{
         return modelMapper.map(user, UserProfileDto.class);
     }
 
+    @Transactional
     @Override
     public UserDto updateUser(String login, UpdateUserDto updateUserDto) {
         UserAccount user = userRepository.findById(login).orElseThrow(() -> new UserNotFoundException(login));
@@ -91,6 +97,7 @@ public class UserServiceImpl implements UserService{
         return modelMapper.map(user, UserDto.class);
     }
 
+    @Transactional
     @Override
     public UserDto deleteUser(String login) {
         UserAccount user = userRepository.findById(login).orElseThrow(() -> new UserNotFoundException(login));
@@ -99,6 +106,7 @@ public class UserServiceImpl implements UserService{
         return dto;
     }
 
+    @Transactional
     @Override
     public UserDto changePassword(String login, UpdatePasswordDto updatePasswordDto) {
         UserAccount user = userRepository.findById(login).orElseThrow(() -> new UserNotFoundException(login));
@@ -110,6 +118,7 @@ public class UserServiceImpl implements UserService{
         return modelMapper.map(user, UserDto.class);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Iterable<FarmDto> getAllFarms() {
         return userRepository.findAll().stream()
