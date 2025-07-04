@@ -55,5 +55,8 @@ public class UserController {
         return userService.changePassword(principal.getName(),updatePasswordDto);
     }
 
-
+    @GetMapping("/farms")
+    public Iterable<FarmDto> getAllFarms() {
+        return userService.getAllFarms();
+    }
 }

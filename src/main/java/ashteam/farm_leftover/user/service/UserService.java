@@ -10,4 +10,5 @@ public interface UserService {
     UserDto changePassword(String login, UpdatePasswordDto updatePasswordDto);
     UserLoginResponseDto login(UserLoginDto userLoginDto);
     UserLoginResponseDto refreshAccessToken(String refreshToken);
+    Iterable<FarmDto> getAllFarms();
 }

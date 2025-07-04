@@ -7,6 +7,7 @@ import ashteam.farm_leftover.user.dto.exceptions.UnauthorizedException;
 import ashteam.farm_leftover.user.dto.exceptions.UserExistsException;
 import ashteam.farm_leftover.user.dto.exceptions.UserIncorrectOldPasswordException;
 import ashteam.farm_leftover.user.dto.exceptions.UserNotFoundException;
+import ashteam.farm_leftover.user.model.Role;
 import ashteam.farm_leftover.user.model.UserAccount;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
@@ -107,5 +108,13 @@ public class UserServiceImpl implements UserService{
         user.setPassword(BCrypt.hashpw(updatePasswordDto.getPassword(), BCrypt.gensalt(12)));
         userRepository.save(user);
         return modelMapper.map(user, UserDto.class);
+    }
+
+    @Override
+    public Iterable<FarmDto> getAllFarms() {
+        return userRepository.findAll().stream()
+                .filter(u -> u.getRoles().contains(Role.FARM))
+                .map(f -> modelMapper.map(f, FarmDto.class))
+                .toList();
     }
 }
