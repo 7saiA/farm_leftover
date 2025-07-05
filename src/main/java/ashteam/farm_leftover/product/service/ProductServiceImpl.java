@@ -10,9 +10,11 @@ import ashteam.farm_leftover.user.dto.exceptions.UserNotFoundException;
 import ashteam.farm_leftover.user.model.UserAccount;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -79,10 +81,21 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional(readOnly = true)
     @Override
-    public Iterable<ProductDto> findAllProducts() {
-        return productRepository.findAll().stream()
+    public Iterable<ProductDto> findAllProducts(String sortOption) {
+        Sort sort = switch (sortOption.toLowerCase()) {
+            case "a-z" -> Sort.by(Sort.Direction.ASC, "productName");
+            case "z-a" -> Sort.by(Sort.Direction.DESC, "productName");
+            case "price-low-high" -> Sort.by(Sort.Direction.ASC, "pricePerUnit");
+            case "price-high-low" -> Sort.by(Sort.Direction.DESC, "pricePerUnit");
+            case "newest" -> Sort.by(Sort.Direction.DESC, "createdAt");
+            default -> Sort.unsorted();
+        };
+
+        List<Product> products = productRepository.findAll(sort);
+
+        return products.stream()
                 .map(p -> modelMapper.map(p, ProductDto.class))
-                .collect(Collectors.toSet());
+                .toList();
     }
 
     @Transactional(readOnly = true)

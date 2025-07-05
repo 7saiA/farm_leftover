@@ -4,6 +4,8 @@ import ashteam.farm_leftover.user.dto.UserForProductDto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 public class ProductDto {
     Long productId;
@@ -11,6 +13,7 @@ public class ProductDto {
     Double pricePerUnit;
     String unit;
     Integer availableQuantity;
+    LocalDateTime createdAt;
     @Setter
     UserForProductDto userForProductDto;
 }

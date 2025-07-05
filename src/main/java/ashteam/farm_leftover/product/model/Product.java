@@ -3,7 +3,10 @@ package ashteam.farm_leftover.product.model;
 import ashteam.farm_leftover.user.model.UserAccount;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
+
+import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
@@ -24,6 +27,9 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "user_account_id")
     UserAccount userAccount;
+
+    @CreationTimestamp
+    LocalDateTime createdAt;
 
     public Product(String productName, Double pricePerUnit, String unit, Integer availableQuantity) {
         this.productName = productName;

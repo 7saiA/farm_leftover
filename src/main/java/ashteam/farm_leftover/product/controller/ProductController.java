@@ -42,7 +42,7 @@ public class ProductController {
     }
 
     @GetMapping
-    public Iterable<ProductDto> findAllProducts(){
-        return productService.findAllProducts();
+    public Iterable<ProductDto> findAllProducts(@RequestParam(defaultValue = "newest") String sort){
+        return productService.findAllProducts(sort);
     }
 }

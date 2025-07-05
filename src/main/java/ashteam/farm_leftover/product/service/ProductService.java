@@ -12,7 +12,7 @@ public interface ProductService {
 
     ProductDto deleteProduct(Long productId);
 
-    Iterable<ProductDto> findAllProducts();
+    Iterable<ProductDto> findAllProducts(String sort);
 
     Iterable<ProductDto> findProductsByFarm(String name);
 }
