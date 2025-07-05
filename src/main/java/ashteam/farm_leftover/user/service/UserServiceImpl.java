@@ -126,4 +126,12 @@ public class UserServiceImpl implements UserService{
                 .map(f -> modelMapper.map(f, FarmDto.class))
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    @Override
+    public FarmDto findFarmById(String login) {
+        UserAccount farm = userRepository.findById(login)
+                .orElseThrow(() -> new UserNotFoundException(login));
+        return modelMapper.map(farm, FarmDto.class);
+    }
 }

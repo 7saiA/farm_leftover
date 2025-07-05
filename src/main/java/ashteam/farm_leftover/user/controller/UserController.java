@@ -59,4 +59,9 @@ public class UserController {
     public Iterable<FarmDto> getAllFarms() {
         return userService.getAllFarms();
     }
+
+    @GetMapping("/farms/{login}")
+    public FarmDto findFarmById(@PathVariable String login) {
+        return userService.findFarmById(login);
+    }
 }

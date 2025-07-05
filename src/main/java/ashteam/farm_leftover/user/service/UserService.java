@@ -11,4 +11,5 @@ public interface UserService {
     UserLoginResponseDto login(UserLoginDto userLoginDto);
     UserLoginResponseDto refreshAccessToken(String refreshToken);
     Iterable<FarmDto> getAllFarms();
+    FarmDto findFarmById(String login);
 }
