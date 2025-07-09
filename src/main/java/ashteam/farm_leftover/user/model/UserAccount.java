@@ -8,32 +8,23 @@ import java.util.HashSet;
 import java.util.Set;
 
 
+@Setter
 @Entity
 @Getter
 @NoArgsConstructor
 @EqualsAndHashCode(of = "login")
 public class UserAccount {
     @Id
-    @Setter
     String login;
-    @Setter
     String email;
-    @Setter
     String password;
-    @Setter
     String phone;
-    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
-    Set<Role> roles = new HashSet<>();
+    Role role;
 
-    //For Farm Role
-    @Setter
     String farmName;
-    @Setter
     String city;
-    @Setter
     String street;
-    @Setter
     @OneToMany(mappedBy = "userAccount", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<Product> products = new HashSet<>();
 
@@ -42,7 +33,7 @@ public class UserAccount {
         this.email = email;
         this.password = password;
         this.phone = phone;
-        roles.add(Role.USER);
+        this.role = Role.USER;
     }
 
     //For Farm Role
@@ -51,7 +42,7 @@ public class UserAccount {
         this.email = email;
         this.password = password;
         this.phone = phone;
-        roles.add(Role.FARM);
+        this.role = Role.FARM;
         this.farmName = farmName;
         this.city = city;
         this.street = street;
@@ -63,21 +54,5 @@ public class UserAccount {
         }
         products.add(product);
         product.setUser(this);
-    }
-
-    public void removeProduct(Product product) {
-        if (product == null) {
-            throw new IllegalArgumentException("Product can't be null");
-        }
-        products.remove(product);
-        product.setUser(null);
-    }
-
-    public boolean addRole(String role){
-        return roles.add(Role.valueOf(role.toUpperCase()));
-    }
-
-    public boolean removeRole(String role){
-        return roles.remove(Role.valueOf(role.toUpperCase()));
     }
 }

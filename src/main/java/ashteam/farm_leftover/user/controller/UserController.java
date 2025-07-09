@@ -15,21 +15,6 @@ public class UserController {
 
     final UserService userService;
 
-    @PostMapping("/register")
-    public UserDto register(@RequestBody UserRegisterDto userRegisterDto) {
-        return userService.register(userRegisterDto);
-    }
-
-    @PostMapping("/login")
-    public UserLoginResponseDto login(@RequestBody UserLoginDto userLoginDto) {
-        return userService.login(userLoginDto);
-    }
-
-    @PostMapping("/refresh")
-    public UserLoginResponseDto refreshToken(@RequestBody UserRefreshTokenRequestDto refreshTokenRequestDto){
-        return userService.refreshAccessToken(refreshTokenRequestDto.getRefreshToken());
-    }
-
     @GetMapping("/profile")
     public UserProfileDto getCurrentUser(Principal principal){
         return userService.getUser(principal.getName());
