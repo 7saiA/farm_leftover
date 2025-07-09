@@ -55,4 +55,8 @@ public class UserAccount {
         products.add(product);
         product.setUser(this);
     }
+
+    public void changeRoleToFarm() {
+        this.role = Role.FARM;
+    }
 }

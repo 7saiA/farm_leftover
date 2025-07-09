@@ -1,6 +1,7 @@
-package ashteam.farm_leftover.security.user;
+package ashteam.farm_leftover.security.userSecurity;
 
 import ashteam.farm_leftover.user.dao.UserRepository;
+import ashteam.farm_leftover.user.model.UserAccount;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -13,7 +14,9 @@ public class CustomUserServiceImpl implements UserDetailsService {
 
     @Override
     public CustomUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findById(username).map(CustomUserDetails::new)
+        UserAccount userAccount = userRepository.findById(username)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
+        return new CustomUserDetails(userAccount);
+        //Avoid Null. Constructor: Uses generated record constructor
     }
 }

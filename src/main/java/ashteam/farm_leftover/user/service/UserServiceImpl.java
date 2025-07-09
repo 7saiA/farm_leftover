@@ -7,10 +7,13 @@ import ashteam.farm_leftover.user.dto.exceptions.UserNotFoundException;
 import ashteam.farm_leftover.user.model.Role;
 import ashteam.farm_leftover.user.model.UserAccount;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.modelmapper.ModelMapper;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.security.Principal;
 
 @Service
 @RequiredArgsConstructor
@@ -18,20 +21,15 @@ public class UserServiceImpl implements UserService{
 
     final UserRepository userRepository;
     final ModelMapper modelMapper;
-
-    @Transactional(readOnly = true)
-    @Override
-    public UserProfileDto getUser(String login) {
-        UserAccount user = userRepository.findById(login)
-                .orElseThrow(() -> new UserNotFoundException(login));
-        return modelMapper.map(user, UserProfileDto.class);
-    }
+    final PasswordEncoder passwordEncoder;
 
     @Transactional
     @Override
-    public UserDto updateUser(String login, UpdateUserDto updateUserDto) {
+    public UserDto updateUser(String login, UpdateUserDto updateUserDto, Principal principal) {
+        if (!login.equals(principal.getName())) {
+            throw new AccessDeniedException("You can only update your own account");
+        }
         UserAccount user = userRepository.findById(login).orElseThrow(() -> new UserNotFoundException(login));
-        if (updateUserDto.getLogin() != null) user.setLogin(updateUserDto.getLogin());
         if (updateUserDto.getEmail() != null) user.setEmail(updateUserDto.getEmail());
         if (updateUserDto.getPhone() != null) user.setPhone(updateUserDto.getPhone());
         user = userRepository.save(user);
@@ -40,23 +38,36 @@ public class UserServiceImpl implements UserService{
 
     @Transactional
     @Override
-    public UserDto deleteUser(String login) {
+    public UserDto deleteUser(String login, Principal principal) {
+        if (!login.equals(principal.getName())) {
+            throw new AccessDeniedException("You can only delete your own account");
+        }
         UserAccount user = userRepository.findById(login).orElseThrow(() -> new UserNotFoundException(login));
         UserDto dto = modelMapper.map(user, UserDto.class);
         userRepository.deleteById(login);
         return dto;
     }
 
+    //TODO check all of methods below to security
+
     @Transactional
     @Override
     public UserDto changePassword(String login, UpdatePasswordDto updatePasswordDto) {
         UserAccount user = userRepository.findById(login).orElseThrow(() -> new UserNotFoundException(login));
-        if (!BCrypt.checkpw(updatePasswordDto.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(updatePasswordDto.getPassword(), user.getPassword())) {
             throw new UserIncorrectOldPasswordException(updatePasswordDto.getPassword());
         }
-        user.setPassword(BCrypt.hashpw(updatePasswordDto.getPassword(), BCrypt.gensalt(12)));
+        user.setPassword(passwordEncoder.encode(updatePasswordDto.getPassword()));
         userRepository.save(user);
         return modelMapper.map(user, UserDto.class);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public UserProfileDto getUser(String login) {
+        UserAccount user = userRepository.findById(login)
+                .orElseThrow(() -> new UserNotFoundException(login));
+        return modelMapper.map(user, UserProfileDto.class);
     }
 
     @Transactional(readOnly = true)

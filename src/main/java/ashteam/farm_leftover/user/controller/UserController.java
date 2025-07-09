@@ -15,6 +15,21 @@ public class UserController {
 
     final UserService userService;
 
+    @PutMapping("/{login}")
+    public UserDto updateUser(@PathVariable String login, @RequestBody UpdateUserDto updateUserDto, Principal principal) {
+        return userService.updateUser(login, updateUserDto, principal);
+    }
+
+    @DeleteMapping("/{login}")
+    public UserDto deleteUser(@PathVariable String login, Principal principal) {
+        return userService.deleteUser(login,principal);
+    }
+
+    @PatchMapping("/password")
+    public UserDto changePassword(Principal principal, @RequestBody UpdatePasswordDto updatePasswordDto){
+        return userService.changePassword(principal.getName(),updatePasswordDto);
+    }
+
     @GetMapping("/profile")
     public UserProfileDto getCurrentUser(Principal principal){
         return userService.getUser(principal.getName());
@@ -23,21 +38,6 @@ public class UserController {
     @GetMapping("/{login}")
     public UserProfileDto findUserById(@PathVariable String login) {
         return userService.getUser(login);
-    }
-
-    @PutMapping("/{login}")
-    public UserDto updateUser(@PathVariable String login, @RequestBody UpdateUserDto updateUserDto) {
-        return userService.updateUser(login, updateUserDto);
-    }
-
-    @DeleteMapping("/{login}")
-    public UserDto deleteUser(@PathVariable String login) {
-        return userService.deleteUser(login);
-    }
-
-    @PatchMapping("/password")
-    public UserDto changePassword(Principal principal, @RequestBody UpdatePasswordDto updatePasswordDto){
-        return userService.changePassword(principal.getName(),updatePasswordDto);
     }
 
     @GetMapping("/farms")

@@ -16,9 +16,10 @@ import java.util.Date;
 
 @Component
 public class JwtService {
+
+    //this interface is API log, witch defines methods for writing logs (these are records of events in the program)
     private static final Logger LOGGER = LogManager.getLogger(JwtService.class);
-    @Value("${jwt.secret.key}")
-    private String jwtSecret;
+    private static final String jwtSecret = "cb651aed68818096aaa79e3bbdce859843e0da93ea916e8c88ecc526b4c7333abc9bc83d5a617481c04b9e5df8fbed29";
 
     public JwtAuthenticationDto generateAuthToken(String login){
         JwtAuthenticationDto jwtDto = new JwtAuthenticationDto();
@@ -46,6 +47,7 @@ public class JwtService {
     public boolean validateJwtToken(String token){
         try {
             Jwts.parser()
+//                    .require("alg", "HS256")
                     .verifyWith(getSignKey())
                     .build()
                     .parseSignedClaims(token)

@@ -4,7 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class UpdateUserDto {
-    String login;
     String email;
     String phone;
 }

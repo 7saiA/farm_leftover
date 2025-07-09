@@ -16,6 +16,8 @@ public class ProductController {
 
     final ProductService productService;
 
+    //TODO there are trouble with security
+
     @PostMapping("/{farmId}")
     public ProductDto addProduct(@PathVariable String farmId, @RequestBody NewProductDto newProductDto) {
         return productService.addProduct(farmId, newProductDto);

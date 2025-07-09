@@ -1,4 +1,4 @@
-package ashteam.farm_leftover.user.dto;
+package ashteam.farm_leftover.auth.dto;
 
 import ashteam.farm_leftover.user.model.Role;
 import lombok.Getter;
