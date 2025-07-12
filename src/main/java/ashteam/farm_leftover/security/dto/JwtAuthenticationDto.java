@@ -1,4 +1,4 @@
-package ashteam.farm_leftover.auth.dto;
+package ashteam.farm_leftover.security.dto;
 
 import lombok.Data;
 

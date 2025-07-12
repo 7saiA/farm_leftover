@@ -2,7 +2,6 @@ package ashteam.farm_leftover.user.service;
 
 import ashteam.farm_leftover.user.dao.UserRepository;
 import ashteam.farm_leftover.user.dto.*;
-import ashteam.farm_leftover.user.dto.exceptions.UserIncorrectOldPasswordException;
 import ashteam.farm_leftover.user.dto.exceptions.UserNotFoundException;
 import ashteam.farm_leftover.user.model.Role;
 import ashteam.farm_leftover.user.model.UserAccount;
@@ -48,19 +47,7 @@ public class UserServiceImpl implements UserService{
         return dto;
     }
 
-    //TODO check all of methods below to security
-
-    @Transactional
-    @Override
-    public UserDto changePassword(String login, UpdatePasswordDto updatePasswordDto) {
-        UserAccount user = userRepository.findById(login).orElseThrow(() -> new UserNotFoundException(login));
-        if (!passwordEncoder.matches(updatePasswordDto.getPassword(), user.getPassword())) {
-            throw new UserIncorrectOldPasswordException(updatePasswordDto.getPassword());
-        }
-        user.setPassword(passwordEncoder.encode(updatePasswordDto.getPassword()));
-        userRepository.save(user);
-        return modelMapper.map(user, UserDto.class);
-    }
+    //TODO check all of methods below, to security
 
     @Transactional(readOnly = true)
     @Override

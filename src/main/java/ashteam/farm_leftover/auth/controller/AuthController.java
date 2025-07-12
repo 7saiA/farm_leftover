@@ -1,16 +1,15 @@
 package ashteam.farm_leftover.auth.controller;
 
-import ashteam.farm_leftover.auth.dto.JwtAuthenticationDto;
+import ashteam.farm_leftover.auth.dto.LogoutDto;
+import ashteam.farm_leftover.security.dto.JwtAuthenticationDto;
 import ashteam.farm_leftover.auth.dto.RefreshTokenDto;
 import ashteam.farm_leftover.auth.dto.UserCredentialsDto;
 import ashteam.farm_leftover.auth.dto.UserRegisterDto;
 import ashteam.farm_leftover.auth.service.AuthService;
+import ashteam.farm_leftover.auth.dto.UpdatePasswordDto;
 import ashteam.farm_leftover.user.dto.UserDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
@@ -36,5 +35,13 @@ public class AuthController {
         return authService.register(userRegisterDto);
     }
 
-    //TODO logout, and think about changePassword maybe it should be here
+    @PostMapping("/logout")
+    public void logout(@RequestBody LogoutDto logoutDto, Principal principal) {
+        authService.logout(logoutDto, principal);
+    }
+
+    @PatchMapping("/password")
+    public UserDto changePassword(Principal principal, @RequestBody UpdatePasswordDto updatePasswordDto){
+        return authService.changePassword(principal, updatePasswordDto);
+    }
 }

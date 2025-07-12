@@ -1,6 +1,7 @@
 package ashteam.farm_leftover.auth.service;
 
-import ashteam.farm_leftover.auth.dto.JwtAuthenticationDto;
+import ashteam.farm_leftover.auth.dto.LogoutDto;
+import ashteam.farm_leftover.security.dto.JwtAuthenticationDto;
 import ashteam.farm_leftover.auth.dto.RefreshTokenDto;
 import ashteam.farm_leftover.auth.dto.UserCredentialsDto;
 import ashteam.farm_leftover.auth.dto.UserRegisterDto;
@@ -9,7 +10,9 @@ import ashteam.farm_leftover.auth.dto.exceptions.BadPasswordException;
 import ashteam.farm_leftover.auth.dto.exceptions.UserExistsException;
 import ashteam.farm_leftover.security.jwt.JwtService;
 import ashteam.farm_leftover.user.dao.UserRepository;
+import ashteam.farm_leftover.auth.dto.UpdatePasswordDto;
 import ashteam.farm_leftover.user.dto.UserDto;
+import ashteam.farm_leftover.auth.dto.exceptions.UserIncorrectOldPasswordException;
 import ashteam.farm_leftover.user.model.UserAccount;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -46,7 +49,8 @@ public class AuthServiceImpl implements AuthService {
         if (!tokenUsername.equals(principal.getName())) {
             throw new BadCredentialsException("Token does not belong to the user");
         }
-        UserAccount userAccount = findByLogin(tokenUsername);
+        UserAccount userAccount = userRepository.findById(tokenUsername).orElseThrow(() ->
+                new UsernameNotFoundException("User not found"));
         return jwtService.refreshAccessToken(userAccount.getLogin(), refreshToken);
     }
 
@@ -55,7 +59,7 @@ public class AuthServiceImpl implements AuthService {
         if (userRepository.existsById(userRegisterDto.getLogin())) {
             throw new UserExistsException(userRegisterDto.getLogin());
         }
-        if (userRegisterDto.getLogin().matches(".*[^a-zA-Z0-9]{3,10}$")) {
+        if (!userRegisterDto.getLogin().matches("^[a-zA-Z0-9]{3,10}$")) {
             throw new BadLoginNameException();
         }
         if (userRegisterDto.getPassword() == null) {
@@ -81,6 +85,43 @@ public class AuthServiceImpl implements AuthService {
         return modelMapper.map(user, UserDto.class);
     }
 
+    @Override
+    public void logout(LogoutDto logoutDto, Principal principal) {
+        if (logoutDto.getRefreshToken() == null
+                || !jwtService.validateJwtToken(logoutDto.getRefreshToken())) {
+            throw new BadCredentialsException("Invalid refresh token");
+        }
+        if (logoutDto.getAccessToken() != null
+                && !jwtService.validateJwtToken(logoutDto.getAccessToken())) {
+            throw new BadCredentialsException("Invalid access token");
+        }
+        String accessTokenUsername = jwtService.getLoginFromToken(logoutDto.getAccessToken());
+        String refreshTokenUsername = jwtService.getLoginFromToken(logoutDto.getRefreshToken());
+        if (!accessTokenUsername.equals(principal.getName())
+                || !refreshTokenUsername.equals(principal.getName())) {
+            throw new BadCredentialsException("Token does not belong to the user");
+        }
+        jwtService.revokeAllTokens(logoutDto.getAccessToken() ,logoutDto.getRefreshToken());
+    }
+
+    @Override
+    public UserDto changePassword(Principal principal, UpdatePasswordDto updatePasswordDto) {
+        UserAccount userAccount = userRepository.findById(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException(principal.getName()));
+        if (!passwordEncoder.matches(updatePasswordDto.getOldPassword(), userAccount.getPassword())) {
+            throw new UserIncorrectOldPasswordException();
+        }
+        if (updatePasswordDto.getNewPassword() == null) {
+            throw new BadPasswordException();
+        }
+        jwtService.revokeAllTokens(updatePasswordDto.getAccessToken(), updatePasswordDto.getRefreshToken());
+
+        String newHashedPassword = passwordEncoder.encode(updatePasswordDto.getNewPassword());
+        userAccount.setPassword(newHashedPassword);
+        userAccount = userRepository.save(userAccount);
+        return modelMapper.map(userAccount, UserDto.class);
+    }
+
     private UserAccount findByCredentials(UserCredentialsDto userCredentialsDto) {
         Optional<UserAccount> optionalUser = userRepository.findById(userCredentialsDto.getLogin());
         if (optionalUser.isPresent()) {
@@ -90,10 +131,5 @@ public class AuthServiceImpl implements AuthService {
             }
         }
         throw new BadCredentialsException("Login or Password is not correct");
-    }
-
-    private UserAccount findByLogin(String login) {
-        return userRepository.findById(login).orElseThrow(() ->
-                new UsernameNotFoundException("User not found"));
     }
 }

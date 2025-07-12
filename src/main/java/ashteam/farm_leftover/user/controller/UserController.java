@@ -25,11 +25,6 @@ public class UserController {
         return userService.deleteUser(login,principal);
     }
 
-    @PatchMapping("/password")
-    public UserDto changePassword(Principal principal, @RequestBody UpdatePasswordDto updatePasswordDto){
-        return userService.changePassword(principal.getName(),updatePasswordDto);
-    }
-
     @GetMapping("/profile")
     public UserProfileDto getCurrentUser(Principal principal){
         return userService.getUser(principal.getName());
