@@ -16,34 +16,35 @@ public class ProductController {
 
     final ProductService productService;
 
-    //TODO there are trouble with security
-
-    @PostMapping("/{farmId}")
-    public ProductDto addProduct(@PathVariable String farmId, @RequestBody NewProductDto newProductDto) {
-        return productService.addProduct(farmId, newProductDto);
+    @PostMapping("/add-product")
+    public ProductDto addProduct(Principal principal, @RequestBody NewProductDto newProductDto) {
+        return productService.addProduct(principal.getName(), newProductDto);
     }
 
-    @GetMapping("/myProducts")
+    @PutMapping("/{productId}")
+    public ProductDto updateProductById(@PathVariable Long productId,
+                                        @RequestBody NewProductDto newProductDto,
+                                        Principal principal) {
+        return productService.updateProductById(productId, newProductDto, principal.getName());
+    }
+
+    @DeleteMapping("/{productId}")
+    public ProductDto deleteProduct(@PathVariable Long productId, Principal principal) {
+        return productService.deleteProduct(productId, principal.getName());
+    }
+
+    @GetMapping("/my-products")
     public Iterable<ProductDto> findProductsByFarmId(Principal principal){
-        return productService.findProductsByFarm(principal.getName());
+        return productService.findProductsByFarmId(principal.getName());
     }
 
+    //TODO speak with Natan to understand why we need it
     @GetMapping("/{productId}")
     public ProductDto findProductByName(@PathVariable Long productId) {
         return productService.findProductByName(productId);
     }
 
-    @PutMapping("/{productId}")
-    public ProductDto updateProductById(@PathVariable Long productId, @RequestBody NewProductDto newProductDto) {
-        return productService.updateProductById(productId, newProductDto);
-    }
-
-    @DeleteMapping("/{productId}")
-    public ProductDto deleteProduct(@PathVariable Long productId) {
-        return productService.deleteProduct(productId);
-    }
-
-    @GetMapping
+    @GetMapping("/all-products")
     public Iterable<ProductDto> findAllProducts(@RequestParam(defaultValue = "newest") String sort){
         return productService.findAllProducts(sort);
     }

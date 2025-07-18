@@ -1,47 +1,38 @@
 package ashteam.farm_leftover.auth.controller;
 
-import ashteam.farm_leftover.auth.dto.LogoutDto;
-import ashteam.farm_leftover.security.dto.JwtAuthenticationDto;
-import ashteam.farm_leftover.auth.dto.RefreshTokenDto;
-import ashteam.farm_leftover.auth.dto.UserCredentialsDto;
+import ashteam.farm_leftover.auth.dto.LoginPasswordDto;
 import ashteam.farm_leftover.auth.dto.UserRegisterDto;
 import ashteam.farm_leftover.auth.service.AuthService;
-import ashteam.farm_leftover.auth.dto.UpdatePasswordDto;
 import ashteam.farm_leftover.user.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
+@CrossOrigin(origins = "*")
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class AuthController {
-
-    private final AuthService authService;
-
-    @PostMapping("/sing-in")
-    public JwtAuthenticationDto singIn(@RequestBody UserCredentialsDto userCredentialsDto) {
-        return authService.singIn(userCredentialsDto);
-    }
-
-    @PostMapping("/refresh")
-    public JwtAuthenticationDto refresh(@RequestBody RefreshTokenDto refreshTokenDto, Principal principal) {
-        return authService.refreshToken(refreshTokenDto, principal);
-    }
+    final AuthService authService;
 
     @PostMapping("/register")
     public UserDto register(@RequestBody UserRegisterDto userRegisterDto) {
         return authService.register(userRegisterDto);
     }
 
-    @PostMapping("/logout")
-    public void logout(@RequestBody LogoutDto logoutDto, Principal principal) {
-        authService.logout(logoutDto, principal);
+    @PostMapping("/sing-in")
+    public UserDto singIn(@RequestBody LoginPasswordDto loginPasswordDto) {
+        return authService.singIn(loginPasswordDto);
+    }
+
+    @PostMapping("/logout/{login}")
+    public String logout(Principal principal, @PathVariable String login) {
+        return authService.logout(principal.getName(), login);
     }
 
     @PatchMapping("/password")
-    public UserDto changePassword(Principal principal, @RequestBody UpdatePasswordDto updatePasswordDto){
-        return authService.changePassword(principal, updatePasswordDto);
+    public void changePassword(Principal principal, @RequestHeader("X-Password") String newPassword) {
+        authService.changePassword(principal.getName(), newPassword);
     }
 }

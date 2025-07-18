@@ -5,8 +5,9 @@ import ashteam.farm_leftover.product.dto.NewProductDto;
 import ashteam.farm_leftover.product.dto.ProductDto;
 import ashteam.farm_leftover.product.dto.exceptions.ProductNotFoundException;
 import ashteam.farm_leftover.product.model.Product;
-import ashteam.farm_leftover.user.dao.UserRepository;
+import ashteam.farm_leftover.user.dao.UserAccountRepository;
 import ashteam.farm_leftover.user.dto.exceptions.UserNotFoundException;
+import ashteam.farm_leftover.user.model.Role;
 import ashteam.farm_leftover.user.model.UserAccount;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -15,45 +16,42 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
     final ProductRepository productRepository;
-    final UserRepository userRepository;
+    final UserAccountRepository userAccountRepository;
     final ModelMapper modelMapper;
 
     @Transactional
     @Override
     public ProductDto addProduct(String farmId, NewProductDto newProductDto) {
-        UserAccount user = userRepository.findById(farmId)
+        UserAccount farm = userAccountRepository.findById(farmId)
                 .orElseThrow(() -> new UserNotFoundException(farmId));
-
+        if (!farm.getRole().equals(Role.FARM)) {
+            throw new IllegalArgumentException();
+        }
         Product product = new Product(
                 newProductDto.getProductName(),
                 newProductDto.getPricePerUnit(),
                 newProductDto.getUnit(),
                 newProductDto.getAvailableQuantity()
         );
-
-        user.addProduct(product);
+        farm.addProduct(product);
         productRepository.save(product);
-
-        return modelMapper.map(product, ProductDto.class);
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public ProductDto findProductByName(Long productId) {
-        Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
         return modelMapper.map(product, ProductDto.class);
     }
 
     @Transactional
     @Override
-    public ProductDto updateProductById(Long productId, NewProductDto newProductDto) {
+    public ProductDto updateProductById(Long productId, NewProductDto newProductDto, String farmId) {
+        UserAccount farm = userAccountRepository.findById(farmId)
+                .orElseThrow(() -> new UserNotFoundException(farmId));
+        if (!farm.getRole().equals(Role.FARM)) {
+            throw new IllegalArgumentException();
+        }
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
         if(newProductDto.getProductName() != null){
             product.setProductName(newProductDto.getProductName());
@@ -67,15 +65,42 @@ public class ProductServiceImpl implements ProductService {
         if(newProductDto.getAvailableQuantity() != null){
             product.setAvailableQuantity(newProductDto.getAvailableQuantity());
         }
+        if (!farm.getProducts().contains(product)) {
+            throw new IllegalArgumentException();
+        }
         product = productRepository.save(product);
         return modelMapper.map(product, ProductDto.class);
     }
 
     @Transactional
     @Override
-    public ProductDto deleteProduct(Long productId) {
+    public ProductDto deleteProduct(Long productId, String farmId) {
+        UserAccount farm = userAccountRepository.findById(farmId)
+                .orElseThrow(() -> new UserNotFoundException(farmId));
+        if (!farm.getRole().equals(Role.FARM)) {
+            throw new IllegalArgumentException();
+        }
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
+        if (!farm.getProducts().contains(product)) {
+            throw new IllegalArgumentException();
+        }
         productRepository.deleteById(productId);
+        return modelMapper.map(product, ProductDto.class);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Iterable<ProductDto> findProductsByFarmId(String farmId) {
+        return productRepository.findAllByUserAccountLogin(farmId)
+                .stream()
+                .map(p -> modelMapper.map(p, ProductDto.class))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public ProductDto findProductByName(Long productId) {
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
         return modelMapper.map(product, ProductDto.class);
     }
 
@@ -94,15 +119,6 @@ public class ProductServiceImpl implements ProductService {
         List<Product> products = productRepository.findAll(sort);
 
         return products.stream()
-                .map(p -> modelMapper.map(p, ProductDto.class))
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public Iterable<ProductDto> findProductsByFarm(String name) {
-        return productRepository.findAllByUserAccountLogin(name)
-                .stream()
                 .map(p -> modelMapper.map(p, ProductDto.class))
                 .toList();
     }

@@ -36,18 +36,6 @@ public class UserAccount {
         this.role = Role.USER;
     }
 
-    //For Farm Role
-    public UserAccount(String login, String email, String password, String phone, String farmName, String city, String street) {
-        this.login = login;
-        this.email = email;
-        this.password = password;
-        this.phone = phone;
-        this.role = Role.FARM;
-        this.farmName = farmName;
-        this.city = city;
-        this.street = street;
-    }
-
     public void addProduct(Product product) {
         if (product == null) {
             throw new IllegalArgumentException("Product can't be null");
