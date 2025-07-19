@@ -2,10 +2,9 @@ package ashteam.farm_leftover.auth.service;
 
 import ashteam.farm_leftover.auth.dto.LoginPasswordDto;
 import ashteam.farm_leftover.auth.dto.UserRegisterDto;
-import ashteam.farm_leftover.auth.dto.exceptions.BadLoginNameException;
-import ashteam.farm_leftover.auth.dto.exceptions.BadPasswordException;
-import ashteam.farm_leftover.auth.dto.exceptions.UserExistsException;
-import ashteam.farm_leftover.auth.dto.exceptions.UserNotFoundException;
+import ashteam.farm_leftover.auth.dto.exceptions.*;
+import ashteam.farm_leftover.auth.dto.response.AuthResponse;
+import ashteam.farm_leftover.jwt.service.JwtTokenService;
 import ashteam.farm_leftover.user.dao.UserAccountRepository;
 import ashteam.farm_leftover.user.dto.UserDto;
 import ashteam.farm_leftover.user.model.UserAccount;
@@ -21,6 +20,7 @@ public class AuthServiceImpl implements AuthService {
     final UserAccountRepository userAccountRepository;
     final ModelMapper modelMapper;
     final PasswordEncoder passwordEncoder;
+    final JwtTokenService jwtTokenService;
 
     @Override
     public UserDto register(UserRegisterDto userRegisterDto) {
@@ -54,21 +54,25 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public UserDto signIn(LoginPasswordDto loginPasswordDto) {
+    public AuthResponse signIn(LoginPasswordDto loginPasswordDto) {
         UserAccount userAccount = userAccountRepository.findById(loginPasswordDto.getLogin())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         if (!passwordEncoder.matches(loginPasswordDto.getPassword(), userAccount.getPassword())) {
             throw new BadPasswordException();
         }
-        return modelMapper.map(userAccount, UserDto.class);
+        UserDto userDto = modelMapper.map(userAccount, UserDto.class);
+        String accessToken = jwtTokenService.generateAccessToken(userDto.getLogin());
+        String refreshToken = jwtTokenService.generateRefreshToken(userDto.getLogin());
+
+        jwtTokenService.saveUserToken(userDto.getLogin(), accessToken, refreshToken);
+
+        return new AuthResponse(accessToken, refreshToken, userDto);
     }
 
     @Override
-    public String logout(String principalLogin, String login) {
-        if (!login.equals(principalLogin)) {
-            throw new BadLoginNameException();
-        }
-        return "Logout is done";
+    public void logout(String accessToken, String refreshToken) {
+        String login = jwtTokenService.extractUsername(accessToken);
+        jwtTokenService.revokeAllTokens(login);
     }
 
     @Override
@@ -77,5 +81,24 @@ public class AuthServiceImpl implements AuthService {
         String password = passwordEncoder.encode(newPassword);
         userAccount.setPassword(password);
         userAccountRepository.save(userAccount);
+    }
+
+    @Override
+    public AuthResponse refreshToken(String refreshToken) {
+        if (!jwtTokenService.validateToken(refreshToken)) {
+            throw new InvalidTokenException("Invalid refresh token");
+        }
+
+        String login = jwtTokenService.extractUsername(refreshToken);
+        UserAccount userAccount = userAccountRepository.findById(login)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        UserDto userDto = modelMapper.map(userAccount, UserDto.class);
+        String newAccessToken = jwtTokenService.generateAccessToken(login);
+        String newRefreshToken = jwtTokenService.generateRefreshToken(login);
+
+        jwtTokenService.saveUserToken(login, newAccessToken, newRefreshToken);
+
+        return new AuthResponse(newAccessToken, newRefreshToken, userDto);
     }
 }

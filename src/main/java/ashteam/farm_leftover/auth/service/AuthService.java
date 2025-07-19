@@ -2,14 +2,17 @@ package ashteam.farm_leftover.auth.service;
 
 import ashteam.farm_leftover.auth.dto.LoginPasswordDto;
 import ashteam.farm_leftover.auth.dto.UserRegisterDto;
+import ashteam.farm_leftover.auth.dto.response.AuthResponse;
 import ashteam.farm_leftover.user.dto.UserDto;
 
 public interface AuthService {
     UserDto register(UserRegisterDto userRegisterDto);
 
-    UserDto signIn(LoginPasswordDto loginPasswordDto);
+    AuthResponse signIn(LoginPasswordDto loginPasswordDto);
 
-    String logout(String principalLogin, String login);
+    void logout(String accessToken, String refreshToken);
 
     void changePassword(String login, String newPassword);
+
+    AuthResponse refreshToken(String refreshToken);
 }
