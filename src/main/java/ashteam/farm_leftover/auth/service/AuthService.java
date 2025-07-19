@@ -7,7 +7,7 @@ import ashteam.farm_leftover.user.dto.UserDto;
 public interface AuthService {
     UserDto register(UserRegisterDto userRegisterDto);
 
-    UserDto singIn(LoginPasswordDto loginPasswordDto);
+    UserDto signIn(LoginPasswordDto loginPasswordDto);
 
     String logout(String principalLogin, String login);
 

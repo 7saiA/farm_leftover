@@ -21,9 +21,9 @@ public class AuthController {
         return authService.register(userRegisterDto);
     }
 
-    @PostMapping("/sing-in")
-    public UserDto singIn(@RequestBody LoginPasswordDto loginPasswordDto) {
-        return authService.singIn(loginPasswordDto);
+    @PostMapping("/sign-in")
+    public UserDto signIn(@RequestBody LoginPasswordDto loginPasswordDto) {
+        return authService.signIn(loginPasswordDto);
     }
 
     @PostMapping("/logout/{login}")

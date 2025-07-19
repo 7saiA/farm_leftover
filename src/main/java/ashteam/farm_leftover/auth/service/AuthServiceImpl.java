@@ -54,7 +54,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public UserDto singIn(LoginPasswordDto loginPasswordDto) {
+    public UserDto signIn(LoginPasswordDto loginPasswordDto) {
         UserAccount userAccount = userAccountRepository.findById(loginPasswordDto.getLogin())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         if (!passwordEncoder.matches(loginPasswordDto.getPassword(), userAccount.getPassword())) {
