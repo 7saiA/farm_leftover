@@ -13,6 +13,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class AuthServiceImpl implements AuthService {
     final PasswordEncoder passwordEncoder;
     final JwtTokenService jwtTokenService;
 
+    @Transactional
     @Override
     public UserDto register(UserRegisterDto userRegisterDto) {
         if (userAccountRepository.existsById(userRegisterDto.getLogin())) {
@@ -53,6 +55,7 @@ public class AuthServiceImpl implements AuthService {
         return modelMapper.map(user, UserDto.class);
     }
 
+    @Transactional
     @Override
     public AuthResponse signIn(LoginPasswordDto loginPasswordDto) {
         UserAccount userAccount = userAccountRepository.findById(loginPasswordDto.getLogin())
@@ -69,12 +72,14 @@ public class AuthServiceImpl implements AuthService {
         return new AuthResponse(accessToken, refreshToken, userDto);
     }
 
+    @Transactional
     @Override
     public void logout(String accessToken, String refreshToken) {
         String login = jwtTokenService.extractUsername(accessToken);
         jwtTokenService.revokeAllTokens(login);
     }
 
+    @Transactional
     @Override
     public void changePassword(String login, String newPassword) {
         UserAccount userAccount = userAccountRepository.findById(login).orElseThrow(UserNotFoundException::new);
@@ -83,9 +88,10 @@ public class AuthServiceImpl implements AuthService {
         userAccountRepository.save(userAccount);
     }
 
+    @Transactional
     @Override
     public AuthResponse refreshToken(String refreshToken) {
-        if (!jwtTokenService.validateToken(refreshToken)) {
+        if (!jwtTokenService.validateRefreshToken(refreshToken)) {
             throw new InvalidTokenException("Invalid refresh token");
         }
 

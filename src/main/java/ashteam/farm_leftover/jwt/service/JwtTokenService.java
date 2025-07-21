@@ -45,10 +45,21 @@ public class JwtTokenService {
                 .compact();
     }
 
-    public boolean validateToken(String token) {
+    public boolean validateRefreshToken(String refreshToken) {
         try {
-            return !isTokenExpired(token) &&
-                    userTokenRepository.findByAccessToken(token)
+            return !isTokenExpired(refreshToken) &&
+                    userTokenRepository.findByRefreshToken(refreshToken)
+                            .map(t -> !t.isRevoked())
+                            .orElse(false);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean validateAccessToken(String accessToken) {
+        try {
+            return !isTokenExpired(accessToken) &&
+                    userTokenRepository.findByAccessToken(accessToken)
                             .map(t -> !t.isRevoked())
                             .orElse(false);
         } catch (Exception e) {

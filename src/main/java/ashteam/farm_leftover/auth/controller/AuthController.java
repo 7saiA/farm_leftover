@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
-@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -82,9 +81,9 @@ public class AuthController {
         return ResponseCookie.from("refreshToken", authResponse.getRefreshToken())
                 .httpOnly(true)
                 .secure(true)
-                .sameSite("Strict")
+                .sameSite("None")
                 .maxAge(jwtTokenService.getRefreshTokenExpirationSeconds())
-                .path("/auth/refresh-token")
+                .path("/")
                 .build();
     }
 }
