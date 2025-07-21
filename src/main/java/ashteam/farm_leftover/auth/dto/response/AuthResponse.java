@@ -12,8 +12,4 @@ public class AuthResponse {
     String accessToken;
     String refreshToken;
     UserDto userDto;
-
-    public AuthResponse withoutRefreshToken() {
-        return new AuthResponse(this.accessToken, null, this.userDto);
-    }
 }

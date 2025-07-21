@@ -1,6 +1,5 @@
 package ashteam.farm_leftover.jwt.filter;
 
-import ashteam.farm_leftover.jwt.dao.UserTokenRepository;
 import ashteam.farm_leftover.jwt.service.JwtTokenService;
 import ashteam.farm_leftover.security.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
@@ -23,7 +22,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenService jwtTokenService;
     private final UserDetailsServiceImpl userDetailsService;
-    private final UserTokenRepository userTokenRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -41,11 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null ) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
-            boolean isTokenValid = userTokenRepository.findByAccessToken(jwt)
-                    .map(token -> !token.isRevoked())
-                    .orElse(false);
-
-            if (jwtTokenService.validateAccessToken(jwt) && isTokenValid) {
+            if (jwtTokenService.validateAccessToken(jwt)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,

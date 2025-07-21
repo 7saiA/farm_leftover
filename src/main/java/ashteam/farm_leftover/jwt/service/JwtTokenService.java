@@ -1,7 +1,9 @@
 package ashteam.farm_leftover.jwt.service;
 
-import ashteam.farm_leftover.jwt.dao.UserTokenRepository;
-import ashteam.farm_leftover.jwt.model.UserToken;
+import ashteam.farm_leftover.jwt.dao.AccessTokenRepository;
+import ashteam.farm_leftover.jwt.dao.RefreshTokenRepository;
+import ashteam.farm_leftover.jwt.model.AccessToken;
+import ashteam.farm_leftover.jwt.model.RefreshToken;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -23,7 +25,8 @@ public class JwtTokenService {
     private static final int accessTokenExpirationMinutes = 15;
     private static final int refreshTokenExpirationDays = 7;
 
-    private final UserTokenRepository userTokenRepository;
+    private final AccessTokenRepository accessTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public String generateAccessToken(String login) {
         return buildToken(login, accessTokenExpirationMinutes, ChronoUnit.MINUTES);
@@ -33,7 +36,7 @@ public class JwtTokenService {
         return buildToken(login, refreshTokenExpirationDays, ChronoUnit.DAYS);
     }
 
-    private String buildToken(String login, long expiration, ChronoUnit unit) {
+    private String buildToken(String login, int expiration, ChronoUnit unit) {
         Instant now = Instant.now();
         Instant expiry = now.plus(expiration, unit);
 
@@ -45,10 +48,13 @@ public class JwtTokenService {
                 .compact();
     }
 
-    public boolean validateRefreshToken(String refreshToken) {
+    public boolean validateAccessToken(String accessToken) {
         try {
-            return !isTokenExpired(refreshToken) &&
-                    userTokenRepository.findByRefreshToken(refreshToken)
+            if (isTokenExpired(accessToken)) {
+                revokeAccessToken(accessToken);
+                return false;
+            }
+            return accessTokenRepository.findByAccessToken(accessToken)
                             .map(t -> !t.isRevoked())
                             .orElse(false);
         } catch (Exception e) {
@@ -56,10 +62,13 @@ public class JwtTokenService {
         }
     }
 
-    public boolean validateAccessToken(String accessToken) {
+    public boolean validateRefreshToken(String refreshToken) {
         try {
-            return !isTokenExpired(accessToken) &&
-                    userTokenRepository.findByAccessToken(accessToken)
+            if (isTokenExpired(refreshToken)) {
+                revokeRefreshToken(refreshToken);
+                return false;
+            }
+            return refreshTokenRepository.findByRefreshToken(refreshToken)
                             .map(t -> !t.isRevoked())
                             .orElse(false);
         } catch (Exception e) {
@@ -79,40 +88,61 @@ public class JwtTokenService {
         return (long) refreshTokenExpirationDays * 24 * 60 * 60;
     }
 
-    public void saveUserToken(String login, String accessToken, String refreshToken) {
+    public void saveTokens(String login, String accessToken, String refreshToken) {
         Instant accessExpiry = extractExpiration(accessToken).toInstant();
-        Instant refreshExpiry = refreshToken != null ? extractExpiration(refreshToken).toInstant() : null;
+        Instant refreshExpiry = extractExpiration(refreshToken).toInstant();
 
-        userTokenRepository.deleteByUsername(login);
+        AccessToken userAccessToken = new AccessToken();
+        userAccessToken.setUsername(login);
+        userAccessToken.setAccessToken(accessToken);
+        userAccessToken.setAccessTokenExpiry(accessExpiry);
 
-        UserToken userToken = new UserToken();
-        userToken.setUsername(login);
-        userToken.setAccessToken(accessToken);
-        userToken.setRefreshToken(refreshToken);
-        userToken.setAccessTokenExpiry(accessExpiry);
-        userToken.setRefreshTokenExpiry(refreshExpiry);
+        RefreshToken userRefreshToken = new RefreshToken();
+        userRefreshToken.setUsername(login);
+        userRefreshToken.setRefreshToken(refreshToken);
+        userRefreshToken.setRefreshTokenExpiry(refreshExpiry);
 
-        userTokenRepository.save(userToken);
+        accessTokenRepository.save(userAccessToken);
+        refreshTokenRepository.save(userRefreshToken);
     }
 
-    public void revokeAllTokens(String login) {
-        UserToken userToken = userTokenRepository.findByUsername(login);
-        userTokenRepository.delete(userToken);
+    public void saveRefreshAccessToken(String login, String accessToken) {
+        Instant accessExpiry = extractExpiration(accessToken).toInstant();
+
+        AccessToken userAccessToken = new AccessToken();
+        userAccessToken.setUsername(login);
+        userAccessToken.setAccessToken(accessToken);
+        userAccessToken.setAccessTokenExpiry(accessExpiry);
+
+        accessTokenRepository.save(userAccessToken);
+    }
+
+    public void revokeAllTokens(String accessToken, String refreshToken) {
+        revokeAccessToken(accessToken);
+        revokeRefreshToken(refreshToken);
+    }
+
+    public void revokeLatestAccessTokensForUser(String username) {
+        accessTokenRepository.findLatestByUsername(username)
+                .ifPresent(accessToken -> {
+                    accessToken.setRevoked(true);
+                    accessTokenRepository.save(accessToken);
+                });
     }
 
     public void revokeAccessToken(String token) {
-        userTokenRepository.findByAccessToken(token)
-                .ifPresent(userToken -> {
-                    userToken.setRevoked(true);
-                    userTokenRepository.save(userToken);
+        accessTokenRepository.findByAccessToken(token)
+                .ifPresent(accessToken -> {
+                    accessToken.setRevoked(true);
+                    accessTokenRepository.save(accessToken);
                 });
     }
 
     public void revokeRefreshToken(String token) {
-        userTokenRepository.findByRefreshToken(token)
-                .ifPresent(userToken -> {
-                    userToken.setRevoked(true);
-                    userTokenRepository.save(userToken);
+        refreshTokenRepository.findByRefreshToken(token)
+                .ifPresent(refreshToken -> {
+                    refreshToken.setRevoked(true);
+                    refreshTokenRepository.save(refreshToken);
                 });
     }
 

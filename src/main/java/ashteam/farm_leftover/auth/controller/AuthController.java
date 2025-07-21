@@ -50,10 +50,7 @@ public class AuthController {
         if (accessToken != null || refreshToken != null) {
             authService.logout(accessToken, refreshToken);
         }
-        ResponseCookie clearCookie = ResponseCookie.from("refreshToken", "")
-                .maxAge(0)
-                .path("/auth/refresh-token")
-                .build();
+        ResponseCookie clearCookie = clearCookie();
 
         response.addHeader(HttpHeaders.SET_COOKIE, clearCookie.toString());
         return ResponseEntity.noContent().build();
@@ -65,16 +62,26 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<AuthResponse> refreshToken(
+    public ResponseEntity<AuthResponse> refreshAccessToken(
             @CookieValue("refreshToken") String refreshToken,
             HttpServletResponse response) {
 
-        AuthResponse authResponse = authService.refreshToken(refreshToken);
+        AuthResponse authResponse = authService.refreshAccessToken(refreshToken);
         ResponseCookie refreshTokenCookie = refreshTokenToCookie(authResponse);
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
         return ResponseEntity.ok()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + authResponse.getAccessToken())
-                .body(authResponse.withoutRefreshToken());
+                .body(authResponse);
+    }
+
+    private ResponseCookie clearCookie() {
+        return ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .maxAge(0)
+                .path("/")
+                .build();
     }
 
     private ResponseCookie refreshTokenToCookie(AuthResponse authResponse) {

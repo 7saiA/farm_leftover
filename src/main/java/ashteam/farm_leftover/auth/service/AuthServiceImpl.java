@@ -67,7 +67,7 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtTokenService.generateAccessToken(userDto.getLogin());
         String refreshToken = jwtTokenService.generateRefreshToken(userDto.getLogin());
 
-        jwtTokenService.saveUserToken(userDto.getLogin(), accessToken, refreshToken);
+        jwtTokenService.saveTokens(userDto.getLogin(), accessToken, refreshToken);
 
         return new AuthResponse(accessToken, refreshToken, userDto);
     }
@@ -75,8 +75,16 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     @Override
     public void logout(String accessToken, String refreshToken) {
-        String login = jwtTokenService.extractUsername(accessToken);
-        jwtTokenService.revokeAllTokens(login);
+        if (!jwtTokenService.validateAccessToken(accessToken)
+                || !jwtTokenService.validateRefreshToken(refreshToken)) {
+            throw new IllegalArgumentException();
+        }
+        String accessLogin = jwtTokenService.extractUsername(accessToken);
+        String refreshLogin = jwtTokenService.extractUsername(refreshToken);
+        if (!accessLogin.equals(refreshLogin)) {
+            throw new IllegalArgumentException();
+        }
+        jwtTokenService.revokeAllTokens(accessToken, refreshToken);
     }
 
     @Transactional
@@ -90,7 +98,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     @Override
-    public AuthResponse refreshToken(String refreshToken) {
+    public AuthResponse refreshAccessToken(String refreshToken) {
         if (!jwtTokenService.validateRefreshToken(refreshToken)) {
             throw new InvalidTokenException("Invalid refresh token");
         }
@@ -100,11 +108,11 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         UserDto userDto = modelMapper.map(userAccount, UserDto.class);
+        jwtTokenService.revokeLatestAccessTokensForUser(login);
         String newAccessToken = jwtTokenService.generateAccessToken(login);
-        String newRefreshToken = jwtTokenService.generateRefreshToken(login);
 
-        jwtTokenService.saveUserToken(login, newAccessToken, newRefreshToken);
+        jwtTokenService.saveRefreshAccessToken(login, newAccessToken);
 
-        return new AuthResponse(newAccessToken, newRefreshToken, userDto);
+        return new AuthResponse(newAccessToken, refreshToken, userDto);
     }
 }

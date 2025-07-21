@@ -8,11 +8,11 @@ import lombok.NoArgsConstructor;
 import java.time.Instant;
 
 @Entity
-@Table(name = "user_tokens")
+@Table(name = "refresh_token")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserToken {
+public class RefreshToken {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String tokenId;
@@ -20,14 +20,8 @@ public class UserToken {
     @Column(nullable = false)
     private String username;
 
-    @Column(nullable = false)
-    private String accessToken;
-
     @Column
     private String refreshToken;
-
-    @Column(nullable = false)
-    private Instant accessTokenExpiry;
 
     @Column
     private Instant refreshTokenExpiry;
