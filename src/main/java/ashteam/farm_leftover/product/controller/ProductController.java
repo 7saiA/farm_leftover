@@ -2,11 +2,14 @@ package ashteam.farm_leftover.product.controller;
 
 import ashteam.farm_leftover.product.dto.NewProductDto;
 import ashteam.farm_leftover.product.dto.ProductDto;
+import ashteam.farm_leftover.product.dto.SearchResultDto;
 import ashteam.farm_leftover.product.service.ProductService;
+import ashteam.farm_leftover.user.service.UserAccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Map;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -15,6 +18,7 @@ import java.security.Principal;
 public class ProductController {
 
     final ProductService productService;
+    final UserAccountService userAccountService;
 
     @PostMapping("/add-product")
     public ProductDto addProduct(Principal principal, @RequestBody NewProductDto newProductDto) {
@@ -47,5 +51,13 @@ public class ProductController {
     @GetMapping("/all-products")
     public Iterable<ProductDto> findAllProducts(@RequestParam(defaultValue = "newest") String sort){
         return productService.findAllProducts(sort);
+    }
+
+    @GetMapping("/search")
+    public SearchResultDto searchAll(@RequestParam String query){
+        return new SearchResultDto(
+                userAccountService.searchFarms(query),
+                productService.searchProducts(query)
+        );
     }
 }

@@ -61,4 +61,12 @@ public class UserAccountServiceImpl implements UserAccountService {
         UserAccount farm = userAccountRepository.findByFarmNameIgnoreCase(farmName);
         return modelMapper.map(farm, FarmDto.class);
     }
+
+    @Override
+    public Iterable<FarmDto> searchFarms(String query) {
+        return userAccountRepository.findUserAccountByRoleAndFarmNameContainsIgnoreCase(Role.FARM,query)
+                .stream()
+                .map(f -> modelMapper.map(f, FarmDto.class))
+                .toList();
+    }
 }

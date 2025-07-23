@@ -8,4 +8,5 @@ public interface UserAccountService {
     UserProfileDto getUser(String login);
     Iterable<FarmDto> getAllFarms();
     FarmDto findFarmByFarmName(String farmName);
+    Iterable<FarmDto> searchFarms(String query);
 }

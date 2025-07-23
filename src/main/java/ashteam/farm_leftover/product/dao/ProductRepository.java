@@ -7,4 +7,6 @@ import java.util.Collection;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
     Collection<Product> findAllByUserAccountLogin(String farmId);
+
+    Collection<Product> findByProductNameContainingIgnoreCase(String query);
 }

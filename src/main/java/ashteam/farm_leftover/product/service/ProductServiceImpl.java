@@ -122,4 +122,12 @@ public class ProductServiceImpl implements ProductService {
                 .map(p -> modelMapper.map(p, ProductDto.class))
                 .toList();
     }
+
+    @Override
+    public Iterable<ProductDto> searchProducts(String query) {
+        return productRepository.findByProductNameContainingIgnoreCase(query)
+                .stream()
+                .map(p -> modelMapper.map(p, ProductDto.class))
+                .toList();
+    }
 }

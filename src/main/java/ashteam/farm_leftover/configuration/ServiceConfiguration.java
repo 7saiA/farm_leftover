@@ -1,5 +1,6 @@
 package ashteam.farm_leftover.configuration;
 
+import ashteam.farm_leftover.cart.dto.CartItemDto;
 import ashteam.farm_leftover.product.dto.ProductDto;
 import ashteam.farm_leftover.product.model.Product;
 import ashteam.farm_leftover.user.dto.UserDto;
@@ -12,6 +13,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.math.BigDecimal;
 
 @Configuration
 public class ServiceConfiguration {
@@ -27,6 +30,14 @@ public class ServiceConfiguration {
         modelMapper.createTypeMap(UserAccount.class, UserDto.class);
         modelMapper.typeMap(Product.class, ProductDto.class)
                 .addMappings(mapper -> mapper.map(Product::getUserAccount, ProductDto::setUserForProductDto));
+
+        modelMapper.typeMap(ashteam.farm_leftover.cart.model.CartItem.class, ashteam.farm_leftover.cart.dto.CartItemDto.class)
+                .addMappings(mapper -> {
+                    mapper.map(src -> src.getProduct().getProductId(), ashteam.farm_leftover.cart.dto.CartItemDto::setProductId);
+                    mapper.map(src -> src.getProduct().getProductName(), ashteam.farm_leftover.cart.dto.CartItemDto::setProductName);
+                    mapper.map(src -> src.getProduct().getPricePerUnit(), CartItemDto::setPricePerUnit);
+                    mapper.map(src -> src.getProduct().getUnit(), ashteam.farm_leftover.cart.dto.CartItemDto::setUnit);
+                });
         return modelMapper;
     }
 

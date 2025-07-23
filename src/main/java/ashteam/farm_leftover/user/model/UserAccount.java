@@ -1,5 +1,6 @@
 package ashteam.farm_leftover.user.model;
 
+import ashteam.farm_leftover.cart.model.Cart;
 import ashteam.farm_leftover.product.model.Product;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,6 +28,8 @@ public class UserAccount {
     String street;
     @OneToMany(mappedBy = "userAccount", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<Product> products = new HashSet<>();
+    @OneToOne(mappedBy = "userAccount", cascade = CascadeType.ALL, orphanRemoval = true)
+    Cart cart;
 
     public UserAccount(String login, String email, String password, String phone) {
         this.login = login;
@@ -34,6 +37,14 @@ public class UserAccount {
         this.password = password;
         this.phone = phone;
         this.role = Role.USER;
+    }
+
+    public void initCart() {
+        if (this.cart == null) {
+            Cart newCart = new Cart();
+            newCart.setUserAccount(this);
+            this.cart = newCart;
+        }
     }
 
     public void addProduct(Product product) {

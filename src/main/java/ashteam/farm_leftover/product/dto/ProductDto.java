@@ -4,13 +4,14 @@ import ashteam.farm_leftover.user.dto.UserForProductDto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
 public class ProductDto {
     Long productId;
     String productName;
-    Double pricePerUnit;
+    BigDecimal pricePerUnit;
     String unit;
     Integer availableQuantity;
     LocalDateTime createdAt;

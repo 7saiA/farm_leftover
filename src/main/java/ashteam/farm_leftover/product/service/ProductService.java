@@ -15,4 +15,6 @@ public interface ProductService {
     ProductDto findProductByName(Long productId);
 
     Iterable<ProductDto> findAllProducts(String sort);
+
+    Iterable<ProductDto> searchProducts(String query);
 }

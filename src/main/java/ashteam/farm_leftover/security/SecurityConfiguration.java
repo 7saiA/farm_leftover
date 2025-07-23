@@ -32,7 +32,7 @@ public class SecurityConfiguration {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         http.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/auth/sign-in", "/auth/register","/auth/refresh-token").permitAll()
+                .requestMatchers("/auth/sign-in", "/auth/register","/auth/refresh-token","products/search").permitAll()
                 .requestMatchers("/users/farms/**").permitAll()
                 .requestMatchers("/products/all-products").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/logout").authenticated()
