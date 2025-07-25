@@ -4,11 +4,12 @@ import ashteam.farm_leftover.jwt.dao.AccessTokenRepository;
 import ashteam.farm_leftover.jwt.dao.RefreshTokenRepository;
 import ashteam.farm_leftover.jwt.model.AccessToken;
 import ashteam.farm_leftover.jwt.model.RefreshToken;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -20,7 +21,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class JwtTokenService {
 
-//    @Value("${jwt.secret}")
+    private static final Logger LOGGER = LogManager.getLogger(JwtTokenService.class);
     private static final String secret = "25bf957ee14c22b0b22711ff49b34a705227433040c82c4112f6e6dbdc443746";
     private static final int accessTokenExpirationMinutes = 15;
     private static final int refreshTokenExpirationDays = 7;
@@ -57,9 +58,18 @@ public class JwtTokenService {
             return accessTokenRepository.findByAccessToken(accessToken)
                             .map(t -> !t.isRevoked())
                             .orElse(false);
+        } catch (ExpiredJwtException e) {
+            LOGGER.error("Expired JwtException", e);
+        } catch (UnsupportedJwtException e) {
+            LOGGER.error("Unsupported JwtException", e);
+        } catch (MalformedJwtException e) {
+            LOGGER.error("Malformed JwtException", e);
+        } catch (SecurityException e) {
+            LOGGER.error("Security Exception", e);
         } catch (Exception e) {
-            return false;
+            LOGGER.error("Invalid token", e);
         }
+        return false;
     }
 
     public boolean validateRefreshToken(String refreshToken) {
@@ -71,9 +81,18 @@ public class JwtTokenService {
             return refreshTokenRepository.findByRefreshToken(refreshToken)
                             .map(t -> !t.isRevoked())
                             .orElse(false);
+        } catch (ExpiredJwtException e) {
+            LOGGER.error("Expired JwtException", e);
+        } catch (UnsupportedJwtException e) {
+            LOGGER.error("Unsupported JwtException", e);
+        } catch (MalformedJwtException e) {
+            LOGGER.error("Malformed JwtException", e);
+        } catch (SecurityException e) {
+            LOGGER.error("Security Exception", e);
         } catch (Exception e) {
-            return false;
+            LOGGER.error("Invalid token", e);
         }
+        return false;
     }
 
     public String extractUsername(String token) {
