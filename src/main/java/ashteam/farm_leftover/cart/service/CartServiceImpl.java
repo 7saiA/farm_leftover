@@ -4,6 +4,7 @@ import ashteam.farm_leftover.cart.dao.CartRepository;
 import ashteam.farm_leftover.cart.dto.AddToCartDto;
 import ashteam.farm_leftover.cart.dto.CartItemDto;
 import ashteam.farm_leftover.cart.dto.CartResponseDto;
+import ashteam.farm_leftover.cart.dto.exception.CartItemNotFoundException;
 import ashteam.farm_leftover.cart.dto.exception.InsufficientQuantityException;
 import ashteam.farm_leftover.cart.model.Cart;
 import ashteam.farm_leftover.cart.model.CartItem;
@@ -14,6 +15,7 @@ import ashteam.farm_leftover.user.dao.UserAccountRepository;
 import ashteam.farm_leftover.user.dto.exceptions.UserNotFoundException;
 import ashteam.farm_leftover.user.model.UserAccount;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,13 +37,13 @@ public class CartServiceImpl implements CartService{
     public CartResponseDto getCartForUser(String login) {
         Cart cart = getOrCreateCart(login);
 
-        List<CartItemDto> itemDtos = cart.getItems().stream()
+        List<CartItemDto> items = cart.getItems().stream()
                 .map(item -> modelMapper.map(item, CartItemDto.class))
                 .toList();
 
         return new CartResponseDto(
                 cart.getCartId(),
-                itemDtos,
+                items,
                 cart.calculateTotal()
         );
     }
@@ -50,7 +52,7 @@ public class CartServiceImpl implements CartService{
     @Override
     public void addToCart(String login, AddToCartDto dto) {
         if (dto.getQuantity() <= 0) {
-            throw new IllegalArgumentException("Quantity must be positive");
+            throw new InsufficientQuantityException("Quantity must be positive");
         }
 
         Cart cart = getOrCreateCart(login);
@@ -65,7 +67,7 @@ public class CartServiceImpl implements CartService{
         int totalRequestedQuantity = currentQuantity + dto.getQuantity();
 
         if (totalRequestedQuantity > product.getAvailableQuantity()) {
-            throw new InsufficientQuantityException("You are requesting: " + totalRequestedQuantity + "but there is: " + product.getAvailableQuantity());
+            throw new InsufficientQuantityException("You are requesting: " + totalRequestedQuantity + " but there is: " + product.getAvailableQuantity());
         }
 
         if (existingItemOpt.isPresent()) {
@@ -82,6 +84,20 @@ public class CartServiceImpl implements CartService{
     public void clearCart(String login) {
         Cart cart = getOrCreateCart(login);
         cart.getItems().clear();
+        cartRepository.save(cart);
+    }
+
+    @Transactional
+    @Override
+    public void deleteCartItem(String login, Long cartItemId) {
+        Cart cart = getOrCreateCart(login);
+        Hibernate.initialize(cart.getItems());
+        boolean removed = cart.getItems().removeIf(item -> item.getCartItemId().equals(cartItemId));
+
+        if(!removed){
+            throw new CartItemNotFoundException(cartItemId);
+        }
+
         cartRepository.save(cart);
     }
 

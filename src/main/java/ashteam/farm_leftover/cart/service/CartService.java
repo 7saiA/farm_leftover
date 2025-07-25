@@ -9,4 +9,6 @@ public interface CartService {
     void addToCart(String login, AddToCartDto dto);
 
     void clearCart(String login);
+
+    void deleteCartItem(String login, Long cartItemId);
 }

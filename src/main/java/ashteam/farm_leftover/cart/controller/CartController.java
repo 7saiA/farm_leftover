@@ -29,4 +29,9 @@ public class CartController {
     public void clearCart(Principal principal) {
         cartService.clearCart(principal.getName());
     }
+
+    @DeleteMapping("/{cartItemId}")
+    public void deleteCartItem(Principal principal, @PathVariable Long cartItemId){
+        cartService.deleteCartItem(principal.getName(),cartItemId);
+    }
 }
