@@ -33,7 +33,7 @@ public class SecurityConfiguration {
 
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/auth/sign-in", "/auth/register","/auth/refresh-token","products/search").permitAll()
-                .requestMatchers("/users/farms/**").permitAll()
+                .requestMatchers("users/farm/**", "/users/farms/**").permitAll()
                 .requestMatchers("/products/all-products").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/logout").authenticated()
                 .anyRequest().authenticated()

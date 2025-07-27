@@ -63,6 +63,13 @@ public class UserAccountServiceImpl implements UserAccountService {
     }
 
     @Override
+    public FarmDto findFarmById(String login) {
+        UserAccount user = userAccountRepository.findById(login)
+                .orElseThrow(() -> new UserNotFoundException(login));
+        return modelMapper.map(user, FarmDto.class);
+    }
+
+    @Override
     public Iterable<FarmDto> searchFarms(String query) {
         return userAccountRepository.findUserAccountByRoleAndFarmNameContainsIgnoreCase(Role.FARM,query)
                 .stream()

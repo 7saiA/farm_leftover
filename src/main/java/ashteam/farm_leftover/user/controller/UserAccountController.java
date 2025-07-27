@@ -30,10 +30,9 @@ public class UserAccountController {
         return userAccountService.getUser(principal.getName());
     }
 
-    //TODO check if we need it
-    @GetMapping("/{login}")
-    public UserProfileDto findUserById(@PathVariable String login) {
-        return userAccountService.getUser(login);
+    @GetMapping("/farm/{login}")
+    public FarmDto findFarmById(@PathVariable String login) {
+        return userAccountService.findFarmById(login);
     }
 
     @GetMapping("/farms")
