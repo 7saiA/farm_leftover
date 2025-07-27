@@ -40,40 +40,40 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Transactional(readOnly = true)
     @Override
-    public UserProfileDto getUser(String login) {
+    public UserDto getUser(String login) {
         UserAccount user = userAccountRepository.findById(login)
                 .orElseThrow(() -> new UserNotFoundException(login));
-        return modelMapper.map(user, UserProfileDto.class);
+        return modelMapper.map(user, UserDto.class);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Iterable<FarmDto> getAllFarms() {
+    public Iterable<UserDto> getAllFarms() {
         return userAccountRepository.findAll().stream()
                 .filter(u -> u.getRole().equals(Role.FARM))
-                .map(f -> modelMapper.map(f, FarmDto.class))
+                .map(f -> modelMapper.map(f, UserDto.class))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     @Override
-    public FarmDto findFarmByFarmName(String farmName) {
+    public UserDto findFarmByFarmName(String farmName) {
         UserAccount farm = userAccountRepository.findByFarmNameIgnoreCase(farmName);
-        return modelMapper.map(farm, FarmDto.class);
+        return modelMapper.map(farm, UserDto.class);
     }
 
     @Override
-    public FarmDto findFarmById(String login) {
+    public UserDto findFarmById(String login) {
         UserAccount user = userAccountRepository.findById(login)
                 .orElseThrow(() -> new UserNotFoundException(login));
-        return modelMapper.map(user, FarmDto.class);
+        return modelMapper.map(user, UserDto.class);
     }
 
     @Override
-    public Iterable<FarmDto> searchFarms(String query) {
+    public Iterable<UserDto> searchFarms(String query) {
         return userAccountRepository.findUserAccountByRoleAndFarmNameContainsIgnoreCase(Role.FARM,query)
                 .stream()
-                .map(f -> modelMapper.map(f, FarmDto.class))
+                .map(f -> modelMapper.map(f, UserDto.class))
                 .toList();
     }
 }

@@ -26,22 +26,22 @@ public class UserAccountController {
     }
 
     @GetMapping("/profile")
-    public UserProfileDto getCurrentUser(Principal principal){
+    public UserDto getCurrentUser(Principal principal){
         return userAccountService.getUser(principal.getName());
     }
 
     @GetMapping("/farm/{login}")
-    public FarmDto findFarmById(@PathVariable String login) {
+    public UserDto findFarmById(@PathVariable String login) {
         return userAccountService.findFarmById(login);
     }
 
     @GetMapping("/farms")
-    public Iterable<FarmDto> getAllFarms() {
+    public Iterable<UserDto> getAllFarms() {
         return userAccountService.getAllFarms();
     }
 
     @GetMapping("/farms/{farmName}")
-    public FarmDto findFarmByFarmName(@PathVariable String farmName) {
+    public UserDto findFarmByFarmName(@PathVariable String farmName) {
         return userAccountService.findFarmByFarmName(farmName);
     }
 }
