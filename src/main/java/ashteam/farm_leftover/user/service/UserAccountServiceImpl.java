@@ -1,12 +1,15 @@
 package ashteam.farm_leftover.user.service;
 
+import ashteam.farm_leftover.jwt.service.JwtTokenService;
 import ashteam.farm_leftover.user.dao.UserAccountRepository;
 import ashteam.farm_leftover.user.dto.*;
+import ashteam.farm_leftover.user.dto.exceptions.FarmNotFoundException;
 import ashteam.farm_leftover.user.dto.exceptions.UserNotFoundException;
 import ashteam.farm_leftover.user.model.Role;
 import ashteam.farm_leftover.user.model.UserAccount;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.modelmapper.ModelMapper;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,10 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class UserAccountServiceImpl implements UserAccountService {
+    private static final Logger log = LogManager.getLogger(UserAccountServiceImpl.class);
 
     final UserAccountRepository userAccountRepository;
     final ModelMapper modelMapper;
-    final PasswordEncoder passwordEncoder;
+    final JwtTokenService jwtTokenService;
 
     @Transactional
     @Override
@@ -31,11 +35,10 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Transactional
     @Override
-    public UserDto deleteUser(String login) {
-        UserAccount user = userAccountRepository.findById(login).orElseThrow(() -> new UserNotFoundException(login));
-        UserDto dto = modelMapper.map(user, UserDto.class);
+    public void deleteUser(String login) {
+        jwtTokenService.revokeAccessToken(login);
+        jwtTokenService.revokeRefreshToken(login);
         userAccountRepository.deleteById(login);
-        return dto;
     }
 
     @Transactional(readOnly = true)
@@ -48,32 +51,28 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Transactional(readOnly = true)
     @Override
-    public Iterable<UserDto> getAllFarms() {
-        return userAccountRepository.findAll().stream()
-                .filter(u -> u.getRole().equals(Role.FARM))
-                .map(f -> modelMapper.map(f, UserDto.class))
-                .toList();
+    public FarmDto findFarmByFarmName(String farmName) {
+        log.info("Searching for farm: {}", farmName);
+        UserAccount farm = userAccountRepository.findByFarmName(farmName).
+                orElseThrow(() -> new FarmNotFoundException(farmName));
+        log.info("Found farm: {}", farm.getFarmName());
+        return modelMapper.map(farm, FarmDto.class);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public UserDto findFarmByFarmName(String farmName) {
-        UserAccount farm = userAccountRepository.findByFarmNameIgnoreCase(farmName);
-        return modelMapper.map(farm, UserDto.class);
+    public Iterable<FarmDto> getAllFarms() {
+        return userAccountRepository.findAll().stream()
+                .filter(u -> u.getRole().equals(Role.FARM))
+                .map(f -> modelMapper.map(f, FarmDto.class))
+                .toList();
     }
 
     @Override
-    public UserDto findFarmById(String login) {
-        UserAccount user = userAccountRepository.findById(login)
-                .orElseThrow(() -> new UserNotFoundException(login));
-        return modelMapper.map(user, UserDto.class);
-    }
-
-    @Override
-    public Iterable<UserDto> searchFarms(String query) {
+    public Iterable<FarmForSearchDto> searchFarms(String query) {
         return userAccountRepository.findUserAccountByRoleAndFarmNameContainsIgnoreCase(Role.FARM,query)
                 .stream()
-                .map(f -> modelMapper.map(f, UserDto.class))
+                .map(f -> modelMapper.map(f, FarmForSearchDto.class))
                 .toList();
     }
 }

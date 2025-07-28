@@ -1,5 +1,6 @@
 package ashteam.farm_leftover.product.controller;
 
+import ashteam.farm_leftover.product.dto.FarmProductDto;
 import ashteam.farm_leftover.product.dto.NewProductDto;
 import ashteam.farm_leftover.product.dto.ProductDto;
 import ashteam.farm_leftover.product.dto.SearchResultDto;
@@ -20,31 +21,25 @@ public class ProductController {
     final UserAccountService userAccountService;
 
     @PostMapping("/add-product")
-    public ProductDto addProduct(Principal principal, @RequestBody NewProductDto newProductDto) {
+    public FarmProductDto addProduct(Principal principal, @RequestBody NewProductDto newProductDto) {
         return productService.addProduct(principal.getName(), newProductDto);
     }
 
     @PutMapping("/{productId}")
-    public ProductDto updateProductById(@PathVariable Long productId,
+    public FarmProductDto updateProductById(@PathVariable String productId,
                                         @RequestBody NewProductDto newProductDto,
                                         Principal principal) {
         return productService.updateProductById(productId, newProductDto, principal.getName());
     }
 
     @DeleteMapping("/{productId}")
-    public ProductDto deleteProduct(@PathVariable Long productId, Principal principal) {
-        return productService.deleteProduct(productId, principal.getName());
+    public void deleteProduct(@PathVariable String productId, Principal principal) {
+        productService.deleteProduct(productId, principal.getName());
     }
 
     @GetMapping("/my-products")
-    public Iterable<ProductDto> findProductsByFarmId(Principal principal){
+    public Iterable<FarmProductDto> findProductsByFarmId(Principal principal){
         return productService.findProductsByFarmId(principal.getName());
-    }
-
-    //TODO speak with Natan to understand why we need it
-    @GetMapping("/{productId}")
-    public ProductDto findProductByName(@PathVariable Long productId) {
-        return productService.findProductByName(productId);
     }
 
     @GetMapping("/all-products")

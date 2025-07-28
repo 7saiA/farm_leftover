@@ -3,10 +3,9 @@ package ashteam.farm_leftover.auth.service;
 import ashteam.farm_leftover.auth.dto.LoginPasswordDto;
 import ashteam.farm_leftover.auth.dto.UserRegisterDto;
 import ashteam.farm_leftover.auth.dto.response.AuthResponse;
-import ashteam.farm_leftover.user.dto.UserDto;
 
 public interface AuthService {
-    UserDto register(UserRegisterDto userRegisterDto);
+    AuthResponse register(UserRegisterDto userRegisterDto);
 
     AuthResponse signIn(LoginPasswordDto loginPasswordDto);
 

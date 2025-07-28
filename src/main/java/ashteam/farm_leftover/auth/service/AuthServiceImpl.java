@@ -25,7 +25,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     @Override
-    public UserDto register(UserRegisterDto userRegisterDto) {
+    public AuthResponse register(UserRegisterDto userRegisterDto) {
         if (userAccountRepository.existsById(userRegisterDto.getLogin())) {
             throw new UserExistsException(userRegisterDto.getLogin());
         }
@@ -35,7 +35,18 @@ public class AuthServiceImpl implements AuthService {
         if (userRegisterDto.getPassword() == null) {
             throw new BadPasswordException();
         }
+        UserAccount user = createUser(userRegisterDto);
+        user = userAccountRepository.save(user);
 
+        String accessToken = jwtTokenService.generateAccessToken(user.getLogin());
+        String refreshToken = jwtTokenService.generateRefreshToken(user.getLogin());
+
+        jwtTokenService.saveTokens(user.getLogin(), accessToken, refreshToken);
+
+        return new AuthResponse(accessToken, refreshToken);
+    }
+
+    private UserAccount createUser(UserRegisterDto userRegisterDto) {
         String hashedPassword = passwordEncoder.encode(userRegisterDto.getPassword());
         UserAccount user = new UserAccount(
                 userRegisterDto.getLogin(),
@@ -43,16 +54,24 @@ public class AuthServiceImpl implements AuthService {
                 hashedPassword,
                 userRegisterDto.getPhone()
         );
+        if (userRegisterDto.getUserName() != null) {
+            if (!userRegisterDto.getUserName().matches("^[a-zA-Z0-9]{3,10}$")) {
+                throw new BadLoginNameException();
+            }
+            user.setUserName(userRegisterDto.getUserName());
+        }
 
         if (userRegisterDto.getFarmName() != null) {
+            if (!userRegisterDto.getFarmName().matches("^[a-zA-Z0-9]{3,20}( [a-zA-Z0-9]{3,20})?$")) {
+                throw new BadLoginNameException();
+            }
             user.changeRoleToFarm();
             user.setFarmName(userRegisterDto.getFarmName());
             user.setCity(userRegisterDto.getCity());
             user.setStreet(userRegisterDto.getStreet());
         }
 
-        user = userAccountRepository.save(user);
-        return modelMapper.map(user, UserDto.class);
+        return user;
     }
 
     @Transactional
@@ -63,13 +82,12 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordEncoder.matches(loginPasswordDto.getPassword(), userAccount.getPassword())) {
             throw new BadPasswordException();
         }
-        UserDto userDto = modelMapper.map(userAccount, UserDto.class);
-        String accessToken = jwtTokenService.generateAccessToken(userDto.getLogin());
-        String refreshToken = jwtTokenService.generateRefreshToken(userDto.getLogin());
+        String accessToken = jwtTokenService.generateAccessToken(userAccount.getLogin());
+        String refreshToken = jwtTokenService.generateRefreshToken(userAccount.getLogin());
 
-        jwtTokenService.saveTokens(userDto.getLogin(), accessToken, refreshToken);
+        jwtTokenService.saveTokens(userAccount.getLogin(), accessToken, refreshToken);
 
-        return new AuthResponse(accessToken, refreshToken, userDto);
+        return new AuthResponse(accessToken, refreshToken);
     }
 
     @Transactional
@@ -104,15 +122,12 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String login = jwtTokenService.extractUsername(refreshToken);
-        UserAccount userAccount = userAccountRepository.findById(login)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        UserDto userDto = modelMapper.map(userAccount, UserDto.class);
         jwtTokenService.revokeLatestAccessTokensForUser(login);
         String newAccessToken = jwtTokenService.generateAccessToken(login);
 
         jwtTokenService.saveRefreshAccessToken(login, newAccessToken);
 
-        return new AuthResponse(newAccessToken, refreshToken, userDto);
+        return new AuthResponse(newAccessToken, refreshToken);
     }
 }

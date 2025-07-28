@@ -2,6 +2,7 @@ package ashteam.farm_leftover.user.controller;
 
 import ashteam.farm_leftover.user.dto.*;
 import ashteam.farm_leftover.user.service.UserAccountService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +22,8 @@ public class UserAccountController {
     }
 
     @DeleteMapping("/delete")
-    public UserDto deleteUser(Principal principal) {
-        return userAccountService.deleteUser(principal.getName());
+    public void deleteUser(Principal principal, HttpServletResponse response) {
+        userAccountService.deleteUser(principal.getName());
     }
 
     @GetMapping("/profile")
@@ -30,18 +31,13 @@ public class UserAccountController {
         return userAccountService.getUser(principal.getName());
     }
 
-    @GetMapping("/farm/{login}")
-    public UserDto findFarmById(@PathVariable String login) {
-        return userAccountService.findFarmById(login);
+    @GetMapping("/farm/{farmName}")
+    public FarmDto findFarmByFarmName(@PathVariable String farmName) {
+        return userAccountService.findFarmByFarmName(farmName);
     }
 
     @GetMapping("/farms")
-    public Iterable<UserDto> getAllFarms() {
+    public Iterable<FarmDto> getAllFarms() {
         return userAccountService.getAllFarms();
-    }
-
-    @GetMapping("/farms/{farmName}")
-    public UserDto findFarmByFarmName(@PathVariable String farmName) {
-        return userAccountService.findFarmByFarmName(farmName);
     }
 }

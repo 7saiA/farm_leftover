@@ -1,20 +1,17 @@
 package ashteam.farm_leftover.product.dto;
 
-import ashteam.farm_leftover.user.dto.UserForProductDto;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Getter
 public class ProductDto {
-    Long productId;
+    String productId;
     String productName;
     BigDecimal pricePerUnit;
     String unit;
     Integer availableQuantity;
-    LocalDateTime createdAt;
     @Setter
-    UserForProductDto userForProductDto;
+    String farmName;
 }

@@ -4,6 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class AddToCartDto {
-    Long productId;
+    String productId;
     int quantity;
 }

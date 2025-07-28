@@ -1,10 +1,11 @@
 package ashteam.farm_leftover.configuration;
 
 import ashteam.farm_leftover.cart.dto.CartItemDto;
+import ashteam.farm_leftover.cart.model.CartItem;
 import ashteam.farm_leftover.product.dto.ProductDto;
 import ashteam.farm_leftover.product.model.Product;
+import ashteam.farm_leftover.user.dto.FarmDto;
 import ashteam.farm_leftover.user.dto.UserDto;
-import ashteam.farm_leftover.user.dto.UserForProductDto;
 import ashteam.farm_leftover.user.model.UserAccount;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.config.Configuration.AccessLevel;
@@ -13,8 +14,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.math.BigDecimal;
 
 @Configuration
 public class ServiceConfiguration {
@@ -26,17 +25,19 @@ public class ServiceConfiguration {
                 .setFieldMatchingEnabled(true)
                 .setFieldAccessLevel(AccessLevel.PRIVATE)
                 .setMatchingStrategy(MatchingStrategies.STRICT);
-        modelMapper.createTypeMap(UserAccount.class, UserForProductDto.class);
         modelMapper.createTypeMap(UserAccount.class, UserDto.class);
+        modelMapper.typeMap(UserAccount.class, FarmDto.class)
+                .addMappings(mapper -> mapper.map(UserAccount::getProducts, FarmDto::setProducts));
         modelMapper.typeMap(Product.class, ProductDto.class)
-                .addMappings(mapper -> mapper.map(Product::getUserAccount, ProductDto::setUserForProductDto));
+                .addMappings(mapper ->
+                        mapper.map(pf -> pf.getUserAccount().getFarmName(), ProductDto::setFarmName));
 
-        modelMapper.typeMap(ashteam.farm_leftover.cart.model.CartItem.class, ashteam.farm_leftover.cart.dto.CartItemDto.class)
+        modelMapper.typeMap(CartItem.class, CartItemDto.class)
                 .addMappings(mapper -> {
-                    mapper.map(src -> src.getProduct().getProductId(), ashteam.farm_leftover.cart.dto.CartItemDto::setProductId);
-                    mapper.map(src -> src.getProduct().getProductName(), ashteam.farm_leftover.cart.dto.CartItemDto::setProductName);
+                    mapper.map(src -> src.getProduct().getProductId(), CartItemDto::setProductId);
+                    mapper.map(src -> src.getProduct().getProductName(), CartItemDto::setProductName);
                     mapper.map(src -> src.getProduct().getPricePerUnit(), CartItemDto::setPricePerUnit);
-                    mapper.map(src -> src.getProduct().getUnit(), ashteam.farm_leftover.cart.dto.CartItemDto::setUnit);
+                    mapper.map(src -> src.getProduct().getUnit(), CartItemDto::setUnit);
                 });
         return modelMapper;
     }

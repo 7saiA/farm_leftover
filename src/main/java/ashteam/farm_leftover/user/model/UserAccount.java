@@ -13,16 +13,19 @@ import java.util.Set;
 @Entity
 @Getter
 @NoArgsConstructor
-@EqualsAndHashCode(of = "login")
+@EqualsAndHashCode(of = "login"+"password")
 public class UserAccount {
     @Id
     String login;
+    @Column(unique = true)
+    String userName;
     String email;
     String password;
     String phone;
     @Enumerated(EnumType.STRING)
     Role role;
 
+    @Column(unique = true)
     String farmName;
     String city;
     String street;

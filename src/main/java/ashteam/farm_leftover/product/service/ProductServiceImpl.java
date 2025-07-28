@@ -1,6 +1,7 @@
 package ashteam.farm_leftover.product.service;
 
 import ashteam.farm_leftover.product.dao.ProductRepository;
+import ashteam.farm_leftover.product.dto.FarmProductDto;
 import ashteam.farm_leftover.product.dto.NewProductDto;
 import ashteam.farm_leftover.product.dto.ProductDto;
 import ashteam.farm_leftover.product.dto.exceptions.ProductNotFoundException;
@@ -27,7 +28,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     @Override
-    public ProductDto addProduct(String farmId, NewProductDto newProductDto) {
+    public FarmProductDto addProduct(String farmId, NewProductDto newProductDto) {
         UserAccount farm = userAccountRepository.findById(farmId)
                 .orElseThrow(() -> new UserNotFoundException(farmId));
         if (!farm.getRole().equals(Role.FARM)) {
@@ -41,12 +42,12 @@ public class ProductServiceImpl implements ProductService {
         );
         farm.addProduct(product);
         productRepository.save(product);
-        return modelMapper.map(product, ProductDto.class);
+        return modelMapper.map(product, FarmProductDto.class);
     }
 
     @Transactional
     @Override
-    public ProductDto updateProductById(Long productId, NewProductDto newProductDto, String farmId) {
+    public FarmProductDto updateProductById(String productId, NewProductDto newProductDto, String farmId) {
         UserAccount farm = userAccountRepository.findById(farmId)
                 .orElseThrow(() -> new UserNotFoundException(farmId));
         if (!farm.getRole().equals(Role.FARM)) {
@@ -69,12 +70,12 @@ public class ProductServiceImpl implements ProductService {
             throw new IllegalArgumentException();
         }
         product = productRepository.save(product);
-        return modelMapper.map(product, ProductDto.class);
+        return modelMapper.map(product, FarmProductDto.class);
     }
 
     @Transactional
     @Override
-    public ProductDto deleteProduct(Long productId, String farmId) {
+    public void deleteProduct(String productId, String farmId) {
         UserAccount farm = userAccountRepository.findById(farmId)
                 .orElseThrow(() -> new UserNotFoundException(farmId));
         if (!farm.getRole().equals(Role.FARM)) {
@@ -85,23 +86,15 @@ public class ProductServiceImpl implements ProductService {
             throw new IllegalArgumentException();
         }
         productRepository.deleteById(productId);
-        return modelMapper.map(product, ProductDto.class);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Iterable<ProductDto> findProductsByFarmId(String farmId) {
+    public Iterable<FarmProductDto> findProductsByFarmId(String farmId) {
         return productRepository.findAllByUserAccountLogin(farmId)
                 .stream()
-                .map(p -> modelMapper.map(p, ProductDto.class))
+                .map(p -> modelMapper.map(p, FarmProductDto.class))
                 .toList();
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public ProductDto findProductByName(Long productId) {
-        Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
-        return modelMapper.map(product, ProductDto.class);
     }
 
     @Transactional(readOnly = true)

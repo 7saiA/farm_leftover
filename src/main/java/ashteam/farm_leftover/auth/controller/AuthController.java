@@ -23,12 +23,18 @@ public class AuthController {
     final JwtTokenService jwtTokenService;
 
     @PostMapping("/register")
-    public UserDto register(@RequestBody UserRegisterDto userRegisterDto) {
-        return authService.register(userRegisterDto);
+    public ResponseEntity<Void> register(@RequestBody UserRegisterDto userRegisterDto,
+                                         HttpServletResponse response) {
+        AuthResponse authResponse = authService.register(userRegisterDto);
+        ResponseCookie refresh = refreshTokenToCookie(authResponse);
+        response.addHeader(HttpHeaders.SET_COOKIE, refresh.toString());
+        return ResponseEntity.ok()
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + authResponse.getAccessToken())
+                .build();
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<AuthResponse> signIn(@RequestBody LoginPasswordDto loginPasswordDto,
+    public ResponseEntity<Void> signIn(@RequestBody LoginPasswordDto loginPasswordDto,
                                                HttpServletResponse response) {
 
         AuthResponse authResponse = authService.signIn(loginPasswordDto);
@@ -36,7 +42,7 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
         return ResponseEntity.ok()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + authResponse.getAccessToken())
-                .body(authResponse);
+                .build();
     }
 
     @PostMapping("/logout")
@@ -62,7 +68,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<AuthResponse> refreshAccessToken(
+    public ResponseEntity<Void> refreshAccessToken(
             @CookieValue("refreshToken") String refreshToken,
             HttpServletResponse response) {
 
@@ -71,7 +77,7 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
         return ResponseEntity.ok()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + authResponse.getAccessToken())
-                .body(authResponse);
+                .build();
     }
 
     private ResponseCookie clearCookie() {

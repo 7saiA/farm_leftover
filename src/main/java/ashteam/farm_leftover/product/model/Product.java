@@ -18,8 +18,8 @@ import java.util.List;
 @Entity
 public class Product {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long productId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String productId;
     @Setter
     String productName;
     @Setter

@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;
 
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, String> {
     Collection<Product> findAllByUserAccountLogin(String farmId);
 
     Collection<Product> findByProductNameContainingIgnoreCase(String query);

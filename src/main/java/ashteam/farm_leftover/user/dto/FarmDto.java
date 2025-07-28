@@ -3,13 +3,15 @@ package ashteam.farm_leftover.user.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Set;
+
 @Getter
-@Setter
-public class UserForProductDto {
-    String login;
+public class FarmDto {
+    String farmName;
     String email;
     String phone;
-    String farmName;
     String city;
     String street;
+    @Setter
+    Set<ProductForFarmDto> products;
 }
