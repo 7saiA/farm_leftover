@@ -7,6 +7,6 @@ public interface UserAccountService {
     void deleteUser(String login);
     UserDto getUser(String login);
     FarmDto findFarmByFarmName(String farmName);
-    Iterable<FarmDto> getAllFarms();
+    Iterable<AllFarmsDto> getAllFarms();
     Iterable<FarmForSearchDto> searchFarms(String query);
 }

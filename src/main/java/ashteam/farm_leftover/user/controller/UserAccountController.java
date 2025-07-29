@@ -37,7 +37,7 @@ public class UserAccountController {
     }
 
     @GetMapping("/farms")
-    public Iterable<FarmDto> getAllFarms() {
+    public Iterable<AllFarmsDto> getAllFarms() {
         return userAccountService.getAllFarms();
     }
 }

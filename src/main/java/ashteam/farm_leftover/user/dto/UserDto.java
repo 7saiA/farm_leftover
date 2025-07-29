@@ -7,6 +7,7 @@ import java.util.Set;
 
 @Getter
 public class UserDto {
+    String userName;
     String email;
     String phone;
     String farmName;

@@ -61,10 +61,10 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Transactional(readOnly = true)
     @Override
-    public Iterable<FarmDto> getAllFarms() {
+    public Iterable<AllFarmsDto> getAllFarms() {
         return userAccountRepository.findAll().stream()
                 .filter(u -> u.getRole().equals(Role.FARM))
-                .map(f -> modelMapper.map(f, FarmDto.class))
+                .map(f -> modelMapper.map(f, AllFarmsDto.class))
                 .toList();
     }
 
