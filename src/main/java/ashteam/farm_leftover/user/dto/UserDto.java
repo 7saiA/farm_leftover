@@ -13,5 +13,4 @@ public class UserDto {
     String farmName;
     String city;
     String street;
-    Set<ProductForFarmDto> products;
 }

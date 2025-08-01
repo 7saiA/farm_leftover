@@ -82,7 +82,7 @@ public class ProductServiceImpl implements ProductService {
             throw new IllegalArgumentException();
         }
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
-        if (!farm.getProducts().contains(product)) {
+        if (farm != product.getUserAccount()) {
             throw new IllegalArgumentException();
         }
         productRepository.deleteById(productId);
