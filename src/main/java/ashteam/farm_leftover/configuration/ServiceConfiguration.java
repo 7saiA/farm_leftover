@@ -47,10 +47,3 @@ public class ServiceConfiguration {
         return new BCryptPasswordEncoder(12);
     }
 }
-
-//For Future
-//modelMapper.typeMap(FarmDto.class, UserAccount.class)
-//            .addMapping(FarmDto::getFarmName, UserAccount::setName);
-//
-//    modelMapper.typeMap(UserAccount.class, FarmDto.class)
-//            .addMapping(UserAccount::getName, FarmDto::setFarmName);
