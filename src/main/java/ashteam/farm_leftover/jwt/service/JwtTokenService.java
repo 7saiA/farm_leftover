@@ -23,7 +23,7 @@ public class JwtTokenService {
 
     private static final Logger LOGGER = LogManager.getLogger(JwtTokenService.class);
     private static final String secret = "25bf957ee14c22b0b22711ff49b34a705227433040c82c4112f6e6dbdc443746";
-    private static final int accessTokenExpirationMinutes = 15;
+    private static final int accessTokenExpirationMinutes = 1;
     private static final int refreshTokenExpirationDays = 7;
 
     private final AccessTokenRepository accessTokenRepository;

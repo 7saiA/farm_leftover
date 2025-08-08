@@ -27,7 +27,7 @@ public class OrderItem {
     @JoinColumn(name = "product_id")
     Product product;
 
-    Integer quantity;
+    int quantity;
     String unit;
     BigDecimal pricePerUnit;
     BigDecimal subtotal;

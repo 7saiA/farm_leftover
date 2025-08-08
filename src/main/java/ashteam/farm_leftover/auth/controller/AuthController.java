@@ -9,6 +9,7 @@ import ashteam.farm_leftover.user.dto.UserDto;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -69,8 +70,13 @@ public class AuthController {
 
     @PostMapping("/refresh-token")
     public ResponseEntity<Void> refreshAccessToken(
-            @CookieValue("refreshToken") String refreshToken,
+            @CookieValue(name = "refreshToken", required = false) String refreshToken,
             HttpServletResponse response) {
+        System.out.println("Refresh token received in controller: " + refreshToken);
+        if (refreshToken == null || refreshToken.isBlank()) {
+            System.out.println("Here is a trouble with refresh token in controller: " + refreshToken);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
         AuthResponse authResponse = authService.refreshAccessToken(refreshToken);
         ResponseCookie refreshTokenCookie = refreshTokenToCookie(authResponse);
@@ -83,8 +89,8 @@ public class AuthController {
     private ResponseCookie clearCookie() {
         return ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
-                .secure(true)
-                .sameSite("None")
+                .secure(false)
+                .sameSite("Lax")
                 .maxAge(0)
                 .path("/")
                 .build();
@@ -93,8 +99,8 @@ public class AuthController {
     private ResponseCookie refreshTokenToCookie(AuthResponse authResponse) {
         return ResponseCookie.from("refreshToken", authResponse.getRefreshToken())
                 .httpOnly(true)
-                .secure(true)
-                .sameSite("None")
+                .secure(false)
+                .sameSite("Lax")
                 .maxAge(jwtTokenService.getRefreshTokenExpirationSeconds())
                 .path("/")
                 .build();

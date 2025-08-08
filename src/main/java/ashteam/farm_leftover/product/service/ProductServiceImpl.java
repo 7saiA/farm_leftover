@@ -34,6 +34,13 @@ public class ProductServiceImpl implements ProductService {
         if (!farm.getRole().equals(Role.FARM)) {
             throw new IllegalArgumentException();
         }
+        if (newProductDto.getProductName() == null
+        || newProductDto.getPricePerUnit() == null
+        || newProductDto.getUnit() == null
+        || newProductDto.getAvailableQuantity() == null
+        || newProductDto.getAvailableQuantity() == 0) {
+            throw new IllegalArgumentException();
+        }
         Product product = new Product(
                 newProductDto.getProductName(),
                 newProductDto.getPricePerUnit(),

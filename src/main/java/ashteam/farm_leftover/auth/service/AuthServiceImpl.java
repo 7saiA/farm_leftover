@@ -117,7 +117,10 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     @Override
     public AuthResponse refreshAccessToken(String refreshToken) {
+        System.out.println("Refresh token received: " + refreshToken);
+        System.out.println("Is valid: " + jwtTokenService.validateRefreshToken(refreshToken));
         if (!jwtTokenService.validateRefreshToken(refreshToken)) {
+            System.out.println("Refresh token invalid!");
             throw new InvalidTokenException("Invalid refresh token");
         }
 

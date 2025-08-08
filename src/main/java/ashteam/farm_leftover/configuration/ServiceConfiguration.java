@@ -2,6 +2,7 @@ package ashteam.farm_leftover.configuration;
 
 import ashteam.farm_leftover.cart.dto.CartItemDto;
 import ashteam.farm_leftover.cart.model.CartItem;
+import ashteam.farm_leftover.order.model.OrderItem;
 import ashteam.farm_leftover.product.dto.ProductDto;
 import ashteam.farm_leftover.product.model.Product;
 import ashteam.farm_leftover.user.dto.FarmDto;
@@ -31,6 +32,13 @@ public class ServiceConfiguration {
         modelMapper.typeMap(Product.class, ProductDto.class)
                 .addMappings(mapper ->
                         mapper.map(pf -> pf.getUserAccount().getFarmName(), ProductDto::setFarmName));
+        modelMapper.typeMap(CartItem.class, OrderItem.class)
+                        .addMappings(mapper -> {
+                            mapper.map(CartItem::getProduct, OrderItem::setProduct);
+                            mapper.map(pc -> pc.getProduct().getUnit(), OrderItem::setUnit);
+                            mapper.map(pc -> pc.getProduct().getPricePerUnit(), OrderItem::setPricePerUnit);
+                            mapper.map(pc -> pc.getProduct().getUserAccount().getFarmName(), OrderItem::setFarmName);
+                        });
 
         modelMapper.typeMap(CartItem.class, CartItemDto.class)
                 .addMappings(mapper -> {
