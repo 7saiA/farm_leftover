@@ -1,11 +1,13 @@
 package ashteam.farm_leftover.user.model;
 
 import ashteam.farm_leftover.cart.model.Cart;
+import ashteam.farm_leftover.order.model.Order;
 import ashteam.farm_leftover.product.model.Product;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -13,7 +15,7 @@ import java.util.Set;
 @Entity
 @Getter
 @NoArgsConstructor
-@EqualsAndHashCode(of = "login"+"password")
+@EqualsAndHashCode(of = "login")
 public class UserAccount {
     @Id
     String login;
@@ -33,6 +35,8 @@ public class UserAccount {
     Set<Product> products = new HashSet<>();
     @OneToOne(mappedBy = "userAccount", cascade = CascadeType.ALL, orphanRemoval = true)
     Cart cart;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,  orphanRemoval = true)
+    List<Order> orders;
 
     public UserAccount(String login, String email, String password, String phone) {
         this.login = login;

@@ -1,5 +1,6 @@
 package ashteam.farm_leftover.order.controller;
 
+import ashteam.farm_leftover.order.dto.OrderItemDto;
 import ashteam.farm_leftover.order.dto.OrderResponseDto;
 import ashteam.farm_leftover.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public List<OrderResponseDto> placeOrder(Principal principal){
+    public OrderResponseDto placeOrder(Principal principal){
         return orderService.placeOrderFromCart(principal.getName());
     }
 

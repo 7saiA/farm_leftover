@@ -1,6 +1,7 @@
 package ashteam.farm_leftover.order.model;
 
 import ashteam.farm_leftover.product.model.Product;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -21,17 +22,27 @@ public class OrderItem {
 
     @ManyToOne
     @JoinColumn(name = "order_id")
+    @JsonIgnore
     Order order;
 
     @ManyToOne
     @JoinColumn(name = "product_id")
     Product product;
 
-    int quantity;
+    String productName;
     String unit;
     BigDecimal pricePerUnit;
+    Integer quantity;
     BigDecimal subtotal;
 
-    String farmName;
-
+    public static OrderItem fromCartItem(Product product, Integer quantity){
+        OrderItem orderItem = new OrderItem();
+        orderItem.setProduct(product);
+        orderItem.setProductName(product.getProductName());
+        orderItem.setUnit(product.getUnit());
+        orderItem.setPricePerUnit(product.getPricePerUnit());
+        orderItem.setQuantity(quantity);
+        orderItem.setSubtotal(product.getPricePerUnit().multiply(BigDecimal.valueOf(quantity)));
+        return orderItem;
+    }
 }

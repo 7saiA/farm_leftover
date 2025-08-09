@@ -4,6 +4,7 @@ import ashteam.farm_leftover.cart.dao.CartRepository;
 import ashteam.farm_leftover.cart.dto.AddToCartDto;
 import ashteam.farm_leftover.cart.dto.CartItemDto;
 import ashteam.farm_leftover.cart.dto.CartResponseDto;
+import ashteam.farm_leftover.cart.dto.exception.CartFarmMismatchException;
 import ashteam.farm_leftover.cart.dto.exception.CartItemNotFoundException;
 import ashteam.farm_leftover.cart.dto.exception.InsufficientQuantityException;
 import ashteam.farm_leftover.cart.model.Cart;
@@ -58,7 +59,11 @@ public class CartServiceImpl implements CartService{
         Cart cart = getOrCreateCart(login);
         Product product = productRepository.findById(dto.getProductId())
                 .orElseThrow(() -> new ProductNotFoundException(dto.getProductId()));
+        UserAccount productFarm = product.getUserAccount();
 
+        if (cart.getFarm() != null && !cart.getFarm().equals(productFarm)){
+            throw new CartFarmMismatchException();
+        }
         Optional<CartItem> existingItemOpt = cart.getItems().stream()
                 .filter(i -> i.getProduct().equals(product))
                 .findFirst();
@@ -74,6 +79,9 @@ public class CartServiceImpl implements CartService{
             existingItemOpt.get().setQuantity(totalRequestedQuantity);
         } else {
             cart.getItems().add(new CartItem(cart, product, dto.getQuantity()));
+            if (cart.getFarm() == null) {
+                cart.setFarm(product.getUserAccount());
+            }
         }
 
         cartRepository.save(cart);
@@ -83,6 +91,7 @@ public class CartServiceImpl implements CartService{
     @Transactional
     public void clearCart(String login) {
         Cart cart = getOrCreateCart(login);
+        cart.setFarm(null);
         cart.getItems().clear();
         cartRepository.save(cart);
     }
@@ -91,11 +100,14 @@ public class CartServiceImpl implements CartService{
     @Override
     public void deleteCartItem(String login, Long cartItemId) {
         Cart cart = getOrCreateCart(login);
-        Hibernate.initialize(cart.getItems());
         boolean removed = cart.getItems().removeIf(item -> item.getCartItemId().equals(cartItemId));
 
         if(!removed){
             throw new CartItemNotFoundException(cartItemId);
+        }
+
+        if(cart.getItems().isEmpty()){
+            cart.setFarm(null);
         }
 
         cartRepository.save(cart);

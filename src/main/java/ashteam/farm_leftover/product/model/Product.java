@@ -1,6 +1,7 @@
 package ashteam.farm_leftover.product.model;
 
 import ashteam.farm_leftover.cart.model.CartItem;
+import ashteam.farm_leftover.order.model.OrderItem;
 import ashteam.farm_leftover.user.model.UserAccount;
 import jakarta.persistence.*;
 import lombok.*;
@@ -35,6 +36,8 @@ public class Product {
     LocalDateTime createdAt;
     @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE)
     List<CartItem> cartItems = new ArrayList<>();
+    @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE)
+    List<OrderItem> orderItems = new ArrayList<>();
 
     public Product(String productName, BigDecimal pricePerUnit, String unit, Integer availableQuantity) {
         this.productName = productName;

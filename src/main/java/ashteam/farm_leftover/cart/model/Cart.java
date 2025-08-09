@@ -22,6 +22,10 @@ public class Cart {
     @JoinColumn(name = "user_id")
     UserAccount userAccount;
 
+    @ManyToOne
+    @JoinColumn(name = "farm_id")
+    UserAccount farm;
+
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     List<CartItem> items = new ArrayList<>();
 
@@ -31,4 +35,7 @@ public class Cart {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    public boolean addProductFromFarmCheck(UserAccount productFarm){
+        return this.farm == null || this.farm.equals(productFarm);
+    }
 }

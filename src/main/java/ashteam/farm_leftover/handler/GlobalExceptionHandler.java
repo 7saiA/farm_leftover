@@ -16,6 +16,26 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(EmptyCartException.class)
+    public ResponseEntity<Map<String, Object>> handleEmptyCart(EmptyCartException e, WebRequest request){
+        return createErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Your cart is empty",
+                "EMPTY_CART",
+                request
+        );
+    };
+
+    @ExceptionHandler(CartFarmMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleCartFarmMismatch(CartFarmMismatchException e, WebRequest request){
+        return createErrorResponse(
+            HttpStatus.CONFLICT,
+            "Can't add products from different farms to the cart",
+            "CART_FARM_MISMATCH",
+            request
+        );
+    };
+
     @ExceptionHandler(UserExistsException.class)
     public ResponseEntity<Map<String, Object>> handleUserExists(UserExistsException e, WebRequest request) {
         return createErrorResponse(
