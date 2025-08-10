@@ -52,6 +52,7 @@ public class ServiceConfiguration {
                    mapper.map(order -> order.getFarm().getFarmName(), OrderResponseDto::setFarmName);
                    mapper.map(order -> order.getFarm().getCity(), OrderResponseDto::setCity);
                    mapper.map(order -> order.getFarm().getStreet(), OrderResponseDto::setStreet);
+                   mapper.map(Order::getCancellationReason,OrderResponseDto::setCancellationReason);
                    mapper.map(Order::getItems, OrderResponseDto::setItems);
                 });
 

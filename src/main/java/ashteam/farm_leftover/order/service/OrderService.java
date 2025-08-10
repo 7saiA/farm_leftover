@@ -1,5 +1,6 @@
 package ashteam.farm_leftover.order.service;
 
+import ashteam.farm_leftover.order.dto.CancellationReasonDto;
 import ashteam.farm_leftover.order.dto.OrderResponseDto;
 import java.util.List;
 
@@ -13,7 +14,7 @@ public interface OrderService {
 
     OrderResponseDto getOrder(String login, String orderId);
 
-    OrderResponseDto cancelOrder(String login, String orderId, String reason);
+    OrderResponseDto cancelOrder(String login, String orderId, CancellationReasonDto reason);
 
     OrderResponseDto markAsReadyForPickup(String login, String orderId);
 

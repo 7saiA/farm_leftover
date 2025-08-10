@@ -1,6 +1,6 @@
 package ashteam.farm_leftover.order.controller;
 
-import ashteam.farm_leftover.order.dto.OrderItemDto;
+import ashteam.farm_leftover.order.dto.CancellationReasonDto;
 import ashteam.farm_leftover.order.dto.OrderResponseDto;
 import ashteam.farm_leftover.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -36,9 +36,8 @@ public class OrderController {
     }
 
     @PostMapping("/{orderId}/cancel")
-    public OrderResponseDto cancelOrder(Principal principal, @PathVariable String orderId,
-                                        @RequestParam(required = false) String reason){
-        return orderService.cancelOrder(principal.getName(),orderId,reason);
+    public OrderResponseDto cancelOrder(Principal principal, @PathVariable String orderId,@RequestBody CancellationReasonDto reason){
+        return orderService.cancelOrder(principal.getName(),orderId ,reason);
     }
 
     @PostMapping("/{orderId}/ready-for-pickup")
