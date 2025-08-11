@@ -11,4 +11,10 @@ import lombok.NoArgsConstructor;
 public class AuthResponse {
     String accessToken;
     String refreshToken;
+    String role;
+
+    public AuthResponse(String accessToken, String refreshToken) {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+    }
 }

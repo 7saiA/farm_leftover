@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -24,18 +25,18 @@ public class AuthController {
     final JwtTokenService jwtTokenService;
 
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@RequestBody UserRegisterDto userRegisterDto,
+    public ResponseEntity<Map<String, String>> register(@RequestBody UserRegisterDto userRegisterDto,
                                          HttpServletResponse response) {
         AuthResponse authResponse = authService.register(userRegisterDto);
         ResponseCookie refresh = refreshTokenToCookie(authResponse);
         response.addHeader(HttpHeaders.SET_COOKIE, refresh.toString());
         return ResponseEntity.ok()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + authResponse.getAccessToken())
-                .build();
+                .body(Map.of("role", authResponse.getRole()));
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<Void> signIn(@RequestBody LoginPasswordDto loginPasswordDto,
+    public ResponseEntity<Map<String, String>> signIn(@RequestBody LoginPasswordDto loginPasswordDto,
                                                HttpServletResponse response) {
 
         AuthResponse authResponse = authService.signIn(loginPasswordDto);
@@ -43,7 +44,7 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
         return ResponseEntity.ok()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + authResponse.getAccessToken())
-                .build();
+                .body(Map.of("role", authResponse.getRole()));
     }
 
     @PostMapping("/logout")
