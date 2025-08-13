@@ -43,7 +43,7 @@ public class AuthServiceImpl implements AuthService {
 
         jwtTokenService.saveTokens(user.getLogin(), accessToken, refreshToken);
 
-        return new AuthResponse(accessToken, refreshToken);
+        return new AuthResponse(accessToken, refreshToken, user.getRole().name());
     }
 
     private UserAccount createUser(UserRegisterDto userRegisterDto) {
@@ -87,7 +87,7 @@ public class AuthServiceImpl implements AuthService {
 
         jwtTokenService.saveTokens(userAccount.getLogin(), accessToken, refreshToken);
 
-        return new AuthResponse(accessToken, refreshToken);
+        return new AuthResponse(accessToken, refreshToken, userAccount.getRole().name());
     }
 
     @Transactional
