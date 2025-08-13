@@ -29,6 +29,8 @@ public class Product {
     String unit;
     @Setter
     Integer availableQuantity;
+    @Setter
+    String imgUrl;
     @ManyToOne
     @JoinColumn(name = "user_account_id")
     UserAccount userAccount;

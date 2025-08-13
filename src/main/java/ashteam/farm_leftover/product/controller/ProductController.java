@@ -6,8 +6,11 @@ import ashteam.farm_leftover.product.dto.ProductDto;
 import ashteam.farm_leftover.product.dto.SearchResultDto;
 import ashteam.farm_leftover.product.service.ProductService;
 import ashteam.farm_leftover.user.service.UserAccountService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 
@@ -20,15 +23,22 @@ public class ProductController {
     final UserAccountService userAccountService;
 
     @PostMapping("/add-product")
-    public FarmProductDto addProduct(Principal principal, @RequestBody NewProductDto newProductDto) {
-        return productService.addProduct(principal.getName(), newProductDto);
+    public FarmProductDto addProduct(
+            Principal principal,
+            @RequestParam("newProduct") String newProductJson,
+            @RequestParam(value = "file", required = false) MultipartFile file
+    ){
+        return productService.addProduct(principal.getName(), newProductJson, file);
     }
 
     @PutMapping("/{productId}")
-    public FarmProductDto updateProductById(@PathVariable String productId,
-                                        @RequestBody NewProductDto newProductDto,
-                                        Principal principal) {
-        return productService.updateProductById(productId, newProductDto, principal.getName());
+    public FarmProductDto updateProductById(
+            @PathVariable String productId,
+            @RequestParam("product") String newProductJson,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            Principal principal
+    ){
+        return productService.updateProductById(productId, newProductJson, principal.getName(), file);
     }
 
     @DeleteMapping("/{productId}")
@@ -52,5 +62,10 @@ public class ProductController {
                 userAccountService.searchFarms(query),
                 productService.searchProducts(query)
         );
+    }
+
+    @PostMapping("/{productId}/upload-image")
+    public void uploadProductImage(@PathVariable String productId,@RequestParam("file")MultipartFile file, Principal principal){
+        productService.uploadProductImage(principal.getName(),productId, file);
     }
 }

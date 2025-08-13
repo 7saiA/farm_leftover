@@ -14,4 +14,6 @@ public class ProductDto {
     Integer availableQuantity;
     @Setter
     String farmName;
+    @Setter
+    String imgUrl;
 }

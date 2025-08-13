@@ -10,13 +10,19 @@ import ashteam.farm_leftover.user.dao.UserAccountRepository;
 import ashteam.farm_leftover.user.dto.exceptions.UserNotFoundException;
 import ashteam.farm_leftover.user.model.Role;
 import ashteam.farm_leftover.user.model.UserAccount;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -25,15 +31,18 @@ public class ProductServiceImpl implements ProductService {
     final ProductRepository productRepository;
     final UserAccountRepository userAccountRepository;
     final ModelMapper modelMapper;
+    final Cloudinary cloudinary;
 
     @Transactional
     @Override
-    public FarmProductDto addProduct(String farmId, NewProductDto newProductDto) {
+    public FarmProductDto addProduct(String farmId, String newProductJson, MultipartFile file) {
         UserAccount farm = userAccountRepository.findById(farmId)
                 .orElseThrow(() -> new UserNotFoundException(farmId));
         if (!farm.getRole().equals(Role.FARM)) {
             throw new IllegalArgumentException();
         }
+        NewProductDto newProductDto = parseJson(newProductJson);
+
         if (newProductDto.getProductName() == null
         || newProductDto.getPricePerUnit() == null
         || newProductDto.getUnit() == null
@@ -47,6 +56,10 @@ public class ProductServiceImpl implements ProductService {
                 newProductDto.getUnit(),
                 newProductDto.getAvailableQuantity()
         );
+        String imageUrl = uploadImage(file);
+        if(imageUrl != null){
+            product.setImgUrl(imageUrl);
+        }
         farm.addProduct(product);
         productRepository.save(product);
         return modelMapper.map(product, FarmProductDto.class);
@@ -54,12 +67,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     @Override
-    public FarmProductDto updateProductById(String productId, NewProductDto newProductDto, String farmId) {
+    public FarmProductDto updateProductById(String productId, String newProductJson, String farmId,MultipartFile file) {
         UserAccount farm = userAccountRepository.findById(farmId)
                 .orElseThrow(() -> new UserNotFoundException(farmId));
         if (!farm.getRole().equals(Role.FARM)) {
             throw new IllegalArgumentException();
         }
+        NewProductDto newProductDto = parseJson(newProductJson);
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
         if(newProductDto.getProductName() != null){
             product.setProductName(newProductDto.getProductName());
@@ -75,6 +89,10 @@ public class ProductServiceImpl implements ProductService {
         }
         if (!farm.getProducts().contains(product)) {
             throw new IllegalArgumentException();
+        }
+        String imageUrl = uploadImage(file);
+        if(imageUrl != null){
+            product.setImgUrl(imageUrl);
         }
         product = productRepository.save(product);
         return modelMapper.map(product, FarmProductDto.class);
@@ -129,5 +147,53 @@ public class ProductServiceImpl implements ProductService {
                 .stream()
                 .map(p -> modelMapper.map(p, ProductDto.class))
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public void uploadProductImage(String login, String productId, MultipartFile file) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException(productId));
+
+        if (!product.getUserAccount().getLogin().equals(login)) {
+            throw new AccessDeniedException("You cannot upload an image for this product");
+        }
+
+        String imageUrl = uploadImage(file);
+        if(imageUrl != null){
+            product.setImgUrl(imageUrl);
+            productRepository.save(product);
+        }
+    }
+
+    private NewProductDto parseJson(String newProductJson){
+        NewProductDto newProductDto;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            newProductDto = mapper.readValue(newProductJson, NewProductDto.class);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid JSON for newProduct", e);
+        }
+        return newProductDto;
+    }
+
+    private String uploadImage(MultipartFile file){
+        if(file == null || file.isEmpty()){
+            return null;
+        }
+        try {
+            Map<String,Object> uploadResult = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap(
+                            "folder", "products",
+                            "use_filename", true,
+                            "unique_filename", false,
+                            "overwrite", true
+                    )
+            );
+            return (String) uploadResult.get("secure_url");
+        }catch (Exception e){
+            throw new RuntimeException("failed to upload product image",e);
+        }
     }
 }
