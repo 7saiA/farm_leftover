@@ -10,5 +10,7 @@ import java.util.Optional;
 public interface UserAccountRepository extends JpaRepository<UserAccount, String> {
     Optional<UserAccount> findByFarmName(String farmName);
 
+    Optional<UserAccount> findByUserName(String username);
+
     List<UserAccount> findUserAccountByRoleAndFarmNameContainsIgnoreCase(Role role, String query);
 }

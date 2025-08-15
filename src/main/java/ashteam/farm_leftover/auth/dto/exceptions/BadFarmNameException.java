@@ -4,8 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.CONFLICT)
-public class BadPasswordException extends RuntimeException {
-    public BadPasswordException() {
-        super("Bad Password");
+public class BadFarmNameException extends RuntimeException {
+    public BadFarmNameException() {
+        super("Bad Farm Name");
     }
 }

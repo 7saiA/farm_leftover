@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -27,7 +29,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse register(UserRegisterDto userRegisterDto) {
         if (userAccountRepository.existsById(userRegisterDto.getLogin())) {
-            throw new UserExistsException(userRegisterDto.getLogin());
+            throw new BadLoginNameException();
         }
         if (!userRegisterDto.getLogin().matches("^[a-zA-Z0-9]{3,10}$")) {
             throw new BadLoginNameException();
@@ -56,14 +58,22 @@ public class AuthServiceImpl implements AuthService {
         );
         if (userRegisterDto.getUserName() != null) {
             if (!userRegisterDto.getUserName().matches("^[a-zA-Z0-9]{3,10}$")) {
-                throw new BadLoginNameException();
+                throw new BadNicknameException();
+            }
+            Optional<UserAccount> userName = userAccountRepository.findByUserName(userRegisterDto.getUserName());
+            if (userName.isPresent()) {
+                throw new BadNicknameException();
             }
             user.setUserName(userRegisterDto.getUserName());
         }
 
         if (userRegisterDto.getFarmName() != null) {
             if (!userRegisterDto.getFarmName().matches("^[a-zA-Z0-9]{3,20}( [a-zA-Z0-9]{3,20})?$")) {
-                throw new BadLoginNameException();
+                throw new BadFarmNameException();
+            }
+            Optional<UserAccount> farmName = userAccountRepository.findByFarmName(userRegisterDto.getFarmName());
+            if (farmName.isPresent()) {
+                throw new BadFarmNameException();
             }
             user.changeRoleToFarm();
             user.setFarmName(userRegisterDto.getFarmName());

@@ -80,8 +80,28 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadLoginNameException.class)
     public ResponseEntity<Map<String, Object>> handleBadLogin(BadLoginNameException e, WebRequest request) {
         return createErrorResponse(
-                HttpStatus.BAD_REQUEST,
-                "INVALID_LOGIN_FORMAT",
+                HttpStatus.CONFLICT,
+                "BAD_LOGIN",
+                e.getMessage(),
+                request
+        );
+    }
+
+    @ExceptionHandler(BadNicknameException.class)
+    public ResponseEntity<Map<String, Object>> handleBadLogin(BadNicknameException e, WebRequest request) {
+        return createErrorResponse(
+                HttpStatus.CONFLICT,
+                "BAD_NICKNAME",
+                e.getMessage(),
+                request
+        );
+    }
+
+    @ExceptionHandler(BadFarmNameException.class)
+    public ResponseEntity<Map<String, Object>> handleBadLogin(BadFarmNameException e, WebRequest request) {
+        return createErrorResponse(
+                HttpStatus.CONFLICT,
+                "BAD_FARM_NAME",
                 e.getMessage(),
                 request
         );
@@ -90,7 +110,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadPasswordException.class)
     public ResponseEntity<Map<String, Object>> handleBadPassword(BadPasswordException e, WebRequest request) {
         return createErrorResponse(
-                HttpStatus.BAD_REQUEST,
+                HttpStatus.CONFLICT,
                 "EMPTY_PASSWORD",
                 e.getMessage(),
                 request
