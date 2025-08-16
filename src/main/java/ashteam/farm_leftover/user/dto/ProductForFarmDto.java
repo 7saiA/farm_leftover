@@ -12,4 +12,5 @@ public class ProductForFarmDto {
     BigDecimal pricePerUnit;
     String unit;
     Integer availableQuantity;
+    String imgUrl;
 }

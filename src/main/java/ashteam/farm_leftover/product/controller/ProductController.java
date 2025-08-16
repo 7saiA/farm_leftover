@@ -1,13 +1,10 @@
 package ashteam.farm_leftover.product.controller;
 
 import ashteam.farm_leftover.product.dto.FarmProductDto;
-import ashteam.farm_leftover.product.dto.NewProductDto;
 import ashteam.farm_leftover.product.dto.ProductDto;
 import ashteam.farm_leftover.product.dto.SearchResultDto;
 import ashteam.farm_leftover.product.service.ProductService;
 import ashteam.farm_leftover.user.service.UserAccountService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
