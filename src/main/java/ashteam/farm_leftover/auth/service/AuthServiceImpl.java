@@ -141,6 +141,8 @@ public class AuthServiceImpl implements AuthService {
 
         jwtTokenService.saveRefreshAccessToken(login, newAccessToken);
 
-        return new AuthResponse(newAccessToken, refreshToken);
+        UserAccount user = userAccountRepository.findById(login).orElseThrow(UserNotFoundException::new);
+
+        return new AuthResponse(newAccessToken, refreshToken, user.getRole().name());
     }
 }

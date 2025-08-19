@@ -70,8 +70,9 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<Void> refreshAccessToken(
+    public ResponseEntity<Map<String, String>> refreshAccessToken(
             @CookieValue(name = "refreshToken", required = false) String refreshToken,
+            @RequestParam(defaultValue = "") String remember,
             HttpServletResponse response) {
         System.out.println("Refresh token received in controller: " + refreshToken);
         if (refreshToken == null || refreshToken.isBlank()) {
@@ -82,9 +83,15 @@ public class AuthController {
         AuthResponse authResponse = authService.refreshAccessToken(refreshToken);
         ResponseCookie refreshTokenCookie = refreshTokenToCookie(authResponse);
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
-        return ResponseEntity.ok()
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + authResponse.getAccessToken())
-                .build();
+        if (remember.equals("remember")) {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + authResponse.getAccessToken())
+                    .body(Map.of("role", authResponse.getRole()));
+        } else {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + authResponse.getAccessToken())
+                    .build();
+        }
     }
 
     private ResponseCookie clearCookie() {
