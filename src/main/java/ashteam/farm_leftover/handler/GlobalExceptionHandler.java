@@ -3,7 +3,9 @@ package ashteam.farm_leftover.handler;
 import ashteam.farm_leftover.auth.dto.exceptions.*;
 import ashteam.farm_leftover.cart.dto.exception.*;
 import ashteam.farm_leftover.order.dto.exception.OrderAccessDeniedException;
+import ashteam.farm_leftover.order.dto.exception.OrderNotFoundException;
 import ashteam.farm_leftover.order.dto.exception.OrderStatusMismatchException;
+import ashteam.farm_leftover.order.dto.exception.ReservationExpiredException;
 import ashteam.farm_leftover.product.dto.exceptions.*;
 import io.jsonwebtoken.*;
 import org.springframework.http.*;
@@ -22,6 +24,26 @@ public class GlobalExceptionHandler {
         return createErrorResponse(
                 HttpStatus.FORBIDDEN,
                 "ORDER_ACCESS_DENIED",
+                e.getMessage(),
+                request
+        );
+    }
+
+    @ExceptionHandler(ReservationExpiredException.class)
+    public ResponseEntity<Map<String,Object>> handleReservationExpired(ReservationExpiredException e, WebRequest request){
+        return createErrorResponse(
+                HttpStatus.CONFLICT,
+                "RESERVATION_EXPIRED",
+                e.getMessage(),
+                request
+        );
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<Map<String,Object>> handleOrderNotFound(OrderNotFoundException e, WebRequest request){
+        return createErrorResponse(
+                HttpStatus.NOT_FOUND,
+                "ORDER_NOT_FOUND",
                 e.getMessage(),
                 request
         );

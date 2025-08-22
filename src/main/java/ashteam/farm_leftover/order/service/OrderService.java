@@ -10,7 +10,7 @@ public interface OrderService {
 
     List<OrderResponseDto> getFarmOrders(String login);
 
-    OrderResponseDto placeOrderFromCart(String login);
+    void reserveOrder(String login);
 
     OrderResponseDto getOrder(String login, String orderId);
 
@@ -19,4 +19,6 @@ public interface OrderService {
     OrderResponseDto markAsReadyForPickup(String login, String orderId);
 
     OrderResponseDto confirmPickupOrComplete(String login, String orderId);
+
+    OrderResponseDto placeOrder(String login);
 }

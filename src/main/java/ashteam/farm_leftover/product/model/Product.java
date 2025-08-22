@@ -6,7 +6,6 @@ import ashteam.farm_leftover.user.model.UserAccount;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -30,6 +29,9 @@ public class Product {
     @Setter
     Integer availableQuantity;
     @Setter
+    @Column(nullable = false)
+    Integer reservedQuantity = 0;
+    @Setter
     String imgUrl;
     @ManyToOne
     @JoinColumn(name = "user_account_id")
@@ -46,17 +48,6 @@ public class Product {
         this.pricePerUnit = pricePerUnit;
         this.unit = unit;
         this.availableQuantity = availableQuantity;
-    }
-
-    public boolean isAvailable(int requestedQuantity){
-        return this.availableQuantity >= requestedQuantity;
-    }
-
-    public void reduceStock(int quantity){
-        if(!isAvailable(quantity)){
-            throw new IllegalArgumentException("Insufficient stock");
-        }
-        availableQuantity -= quantity;
     }
 
     public void setUser(UserAccount userAccount) {

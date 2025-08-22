@@ -25,9 +25,12 @@ public class OrderController {
         return orderService.getFarmOrders(principal.getName());
     }
 
-    @PostMapping
-    public OrderResponseDto placeOrder(Principal principal){
-        return orderService.placeOrderFromCart(principal.getName());
+    @PostMapping("/place-order")
+    public OrderResponseDto placeOrder(Principal principal){return orderService.placeOrder(principal.getName());}
+
+    @PostMapping("/reserve-order")
+    public void reserveOrder(Principal principal){
+        orderService.reserveOrder(principal.getName());
     }
 
     @GetMapping("/{orderId}")

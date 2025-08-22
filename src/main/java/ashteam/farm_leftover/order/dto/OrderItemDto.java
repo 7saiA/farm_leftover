@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class OrderItemDto {
     String productId;
+    String imgUrl;
     String productName;
     Integer quantity;
     String unit;
