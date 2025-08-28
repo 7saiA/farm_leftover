@@ -31,6 +31,8 @@ public class UserAccount {
     String farmName;
     String city;
     String street;
+    Double latitude;
+    Double longitude;
     @OneToMany(mappedBy = "userAccount", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<Product> products = new HashSet<>();
     @OneToOne(mappedBy = "userAccount", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -21,19 +21,18 @@ public interface ProductRepository extends JpaRepository<Product, String> {
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = """
-        UPDATE product p
-        SET reserved_quantity = GREATEST(0, p.reserved_quantity - COALESCE(ci.total_quantity, 0))
-        FROM (
-            SELECT ci2.product_id AS pid, SUM(ci2.quantity) AS total_quantity
-            FROM cart_item ci2
-            WHERE ci2.product_id IN (:productIds)
-              AND ci2.reserved_until < :now
-              AND ci2.reserved_until IS NOT NULL
-            GROUP BY ci2.product_id
-        ) ci
-        WHERE p.product_id = ci.pid
-          AND p.product_id IN (:productIds)
-        """,
+    UPDATE product p
+    SET reserved_quantity = GREATEST(0, p.reserved_quantity - COALESCE(ci.total_quantity, 0))
+    FROM (
+        SELECT product_id, SUM(quantity) AS total_quantity
+        FROM cart_item
+        WHERE product_id IN (:productIds)
+          AND reserved_until < :now
+          AND reserved_until IS NOT NULL
+        GROUP BY product_id
+    ) ci
+    WHERE p.product_id = ci.product_id
+    """,
             nativeQuery = true)
     void releaseExpiredReservationsForProducts(@Param("productIds") List<String> productIds,
                                               @Param("now") LocalDateTime now);

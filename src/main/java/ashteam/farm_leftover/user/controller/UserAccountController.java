@@ -39,4 +39,7 @@ public class UserAccountController {
     public Iterable<AllFarmsDto> getAllFarms() {
         return userAccountService.getAllFarms();
     }
+
+    @PostMapping("/farm/coordinates")
+    public CoordinatesDto setFarmCoordinates(Principal principal){return userAccountService.setFarmCoordinates(principal.getName());}
 }

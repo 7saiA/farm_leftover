@@ -1,5 +1,6 @@
 package ashteam.farm_leftover.user.service;
 
+import ashteam.farm_leftover.geocoding.service.GeocodingService;
 import ashteam.farm_leftover.jwt.service.JwtTokenService;
 import ashteam.farm_leftover.user.dao.UserAccountRepository;
 import ashteam.farm_leftover.user.dto.*;
@@ -22,6 +23,7 @@ public class UserAccountServiceImpl implements UserAccountService {
     final UserAccountRepository userAccountRepository;
     final ModelMapper modelMapper;
     final JwtTokenService jwtTokenService;
+    final GeocodingService geocodingService;
 
     @Transactional
     @Override
@@ -68,11 +70,26 @@ public class UserAccountServiceImpl implements UserAccountService {
                 .toList();
     }
 
+    @Transactional
     @Override
     public Iterable<FarmForSearchDto> searchFarms(String query) {
         return userAccountRepository.findUserAccountByRoleAndFarmNameContainsIgnoreCase(Role.FARM,query)
                 .stream()
                 .map(f -> modelMapper.map(f, FarmForSearchDto.class))
                 .toList();
+    }
+
+    @Transactional
+    @Override
+    public CoordinatesDto setFarmCoordinates(String login) {
+        UserAccount farm = userAccountRepository.findById(login)
+                .orElseThrow(() -> new UserNotFoundException(login));
+
+        double[] coordinates = geocodingService.getCoordinates(farm.getCity(), farm.getStreet());
+        CoordinatesDto coordinatesDto = new CoordinatesDto(coordinates[0],coordinates[1]);
+        farm.setLatitude(coordinatesDto.getLat());
+        farm.setLongitude(coordinatesDto.getLng());
+        userAccountRepository.save(farm);
+        return coordinatesDto;
     }
 }

@@ -9,4 +9,5 @@ public interface UserAccountService {
     FarmDto findFarmByFarmName(String farmName);
     Iterable<AllFarmsDto> getAllFarms();
     Iterable<FarmForSearchDto> searchFarms(String query);
+    CoordinatesDto setFarmCoordinates(String login);
 }
