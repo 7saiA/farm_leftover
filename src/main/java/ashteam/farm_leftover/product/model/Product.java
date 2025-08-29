@@ -29,9 +29,6 @@ public class Product {
     @Setter
     Integer availableQuantity;
     @Setter
-    @Column(nullable = false)
-    Integer reservedQuantity = 0;
-    @Setter
     String imgUrl;
     @ManyToOne
     @JoinColumn(name = "user_account_id")

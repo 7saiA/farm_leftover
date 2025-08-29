@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -31,9 +30,6 @@ public class CartItem {
     String imgUrl;
 
     int quantity;
-
-    @Setter
-    LocalDateTime reservedUntil;
 
     public CartItem(Cart cart, Product product, int quantity){
         this.cart = cart;

@@ -16,7 +16,6 @@ import ashteam.farm_leftover.user.dao.UserAccountRepository;
 import ashteam.farm_leftover.user.dto.exceptions.UserNotFoundException;
 import ashteam.farm_leftover.user.model.UserAccount;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.Hibernate;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

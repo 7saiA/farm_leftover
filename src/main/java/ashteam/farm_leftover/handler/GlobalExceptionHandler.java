@@ -19,6 +19,16 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(NegativeQuantityException.class)
+    public ResponseEntity<Map<String,Object>> handleNegativeQuantity(NegativeQuantityException e,WebRequest request){
+        return createErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "NEGATIVE_PRODUCT_QUANTITY",
+                e.getMessage(),
+                request
+        );
+    }
+
     @ExceptionHandler(OrderAccessDeniedException.class)
     public ResponseEntity<Map<String,Object>> handleOrderAccessDenied(OrderAccessDeniedException e,WebRequest request){
         return createErrorResponse(

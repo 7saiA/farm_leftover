@@ -3,7 +3,6 @@ package ashteam.farm_leftover.order.service;
 import ashteam.farm_leftover.auth.dto.exceptions.UserNotFoundException;
 import ashteam.farm_leftover.cart.dao.CartRepository;
 import ashteam.farm_leftover.cart.dto.exception.EmptyCartException;
-import ashteam.farm_leftover.cart.dto.exception.InsufficientQuantityException;
 import ashteam.farm_leftover.cart.model.Cart;
 import ashteam.farm_leftover.order.dao.OrderRepository;
 import ashteam.farm_leftover.order.dto.CancellationReasonDto;
@@ -11,23 +10,22 @@ import ashteam.farm_leftover.order.dto.OrderResponseDto;
 import ashteam.farm_leftover.order.dto.exception.OrderAccessDeniedException;
 import ashteam.farm_leftover.order.dto.exception.OrderNotFoundException;
 import ashteam.farm_leftover.order.dto.exception.OrderStatusMismatchException;
-import ashteam.farm_leftover.order.dto.exception.ReservationExpiredException;
 import ashteam.farm_leftover.order.model.Order;
 import ashteam.farm_leftover.order.model.OrderItem;
 import ashteam.farm_leftover.order.model.OrderStatus;
 import ashteam.farm_leftover.product.dao.ProductRepository;
+import ashteam.farm_leftover.product.dto.exceptions.ProductNotFoundException;
 import ashteam.farm_leftover.product.model.Product;
+import ashteam.farm_leftover.redis.ReservationService;
 import ashteam.farm_leftover.user.dao.UserAccountRepository;
 import ashteam.farm_leftover.user.model.UserAccount;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +36,7 @@ public class OrderServiceImpl implements OrderService{
     final OrderRepository orderRepository;
     final ProductRepository productRepository;
     final CartRepository cartRepository;
+    private final ReservationService reservationService;
 
     @Transactional(readOnly = true)
     @Override
@@ -68,37 +67,12 @@ public class OrderServiceImpl implements OrderService{
                 .orElseThrow(UserNotFoundException::new);
 
         Cart cart = user.getCart();
-        if (cart == null || cart.getItems().isEmpty()) {
+        if(cart == null || cart.getItems().isEmpty()){
             throw new EmptyCartException();
         }
 
-        List<String> productIds = cart.getItems().stream()
-                .map(item -> item.getProduct().getProductId())
-                .collect(Collectors.toList());
+        reservationService.reserveCart(login,cart.getItems());
 
-        cleanupExpiredReservationsForProducts(productIds);
-
-        LocalDateTime reservedUntil = LocalDateTime.now().plusMinutes(5);
-
-        List<Product> updatedProducts = cart.getItems().stream()
-                .sorted(Comparator.comparing(item -> item.getProduct().getProductId()))
-                .map(item -> {
-                    Product product = productRepository.findProductByIdForUpdate(item.getProduct().getProductId());
-
-                    int available = product.getAvailableQuantity() - product.getReservedQuantity();
-                    if (item.getQuantity() > available) {
-                        throw new InsufficientQuantityException(
-                                "Not enough stock for product: " + product.getProductName()
-                        );
-                    }
-
-                    product.setReservedQuantity(product.getReservedQuantity() + item.getQuantity());
-                    item.setReservedUntil(reservedUntil);
-                    return product;
-                })
-                .toList();
-
-        productRepository.saveAll(updatedProducts);
         cartRepository.save(cart);
     }
 
@@ -112,40 +86,35 @@ public class OrderServiceImpl implements OrderService{
         if (cart == null || cart.getItems().isEmpty()) {
             throw new EmptyCartException();
         }
+
+        reservationService.confirmCart(login, cart.getItems());
+
         Order order = new Order();
         order.setUser(user);
         order.setFarm(cart.getFarm());
         order.setOrderStatus(OrderStatus.CREATED);
 
-        LocalDateTime now = LocalDateTime.now();
-
-        List<OrderItem> orderItems = cart.getItems()
-                .stream()
-                .sorted(Comparator.comparing(cartItem -> cartItem.getProduct().getProductId()))
+        List<OrderItem> orderItems = cart.getItems().stream()
+                .sorted(Comparator.comparing(ci -> ci.getProduct().getProductId()))
                 .map(cartItem -> {
-                    if(cartItem.getReservedUntil() == null || cartItem.getReservedUntil().isBefore(now)){
-                        throw new ReservationExpiredException();
-                    }
-                    Product product = productRepository.findProductByIdForUpdate(cartItem.getProduct().getProductId());
-                    product.setReservedQuantity(product.getReservedQuantity() - cartItem.getQuantity());
-                    product.setAvailableQuantity(product.getAvailableQuantity() - cartItem.getQuantity());
+                    Product product = productRepository.findById(cartItem.getProduct().getProductId())
+                            .orElseThrow(() -> new ProductNotFoundException(cartItem.getProduct().getProductId()));
 
-                    OrderItem orderItem = OrderItem.fromCartItem(product,cartItem.getQuantity());
+                    product.setAvailableQuantity(product.getAvailableQuantity() - cartItem.getQuantity());
+                    productRepository.save(product);
+
+                    OrderItem orderItem = OrderItem.fromCartItem(product, cartItem.getQuantity());
                     orderItem.setOrder(order);
                     return orderItem;
-                })
-                .toList();
+                }).toList();
 
         order.setItems(orderItems);
         order.calculateTotalPrice();
 
         cart.getItems().clear();
+        cartRepository.save(cart);
 
         orderRepository.save(order);
-        productRepository.saveAll(
-                orderItems.stream().map(OrderItem::getProduct).toList()
-        );
-        cartRepository.save(cart);
 
         return modelMapper.map(order, OrderResponseDto.class);
     }
@@ -247,11 +216,4 @@ public class OrderServiceImpl implements OrderService{
         return modelMapper.map(order,OrderResponseDto.class);
     }
 
-    private void cleanupExpiredReservationsForProducts(List<String> productIds) {
-        LocalDateTime now = LocalDateTime.now();
-
-        productRepository.releaseExpiredReservationsForProducts(productIds, now);
-
-        cartRepository.clearExpiredReservationsForCartItems(productIds, now);
-    }
 }
