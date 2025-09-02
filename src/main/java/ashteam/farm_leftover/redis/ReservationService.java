@@ -11,38 +11,70 @@ import ashteam.farm_leftover.product.model.Product;
 import ashteam.farm_leftover.user.dto.exceptions.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class ReservationService {
-    final StringRedisTemplate redis;
-    final ProductRepository productRepository;
+    private final StringRedisTemplate redis;
+    private final ProductRepository productRepository;
 
-    static final Duration TTL = Duration.ofMinutes(1);
-    static final String USER_PREFIX = "reservation:user:";
-    static final String PRODUCT_PREFIX = "reservation:product:";  // FIXED: Added colon
+    private static final Duration TTL = Duration.ofMinutes(5);
+    private static final String USER_RESERVATION_PREFIX = "reservation:user:";
+    private static final String PRODUCT_RESERVATION_PREFIX = "reservation:product:";
+
+    private static final String RESERVE_SCRIPT =
+            "local productKey = KEYS[1] " +
+                    "local userProductKey = KEYS[2] " +
+                    "local quantity = tonumber(ARGV[1]) " +
+                    "local available = tonumber(ARGV[2]) " +
+                    "local ttl = tonumber(ARGV[3]) " +
+                    "local currentReserved = tonumber(redis.call('get', productKey) or 0) " +
+                    "if (available - currentReserved) >= quantity then " +
+                    "   redis.call('incrby', productKey, quantity) " +
+                    "   redis.call('setex', userProductKey, ttl, quantity) " +
+                    "   return 1 " +
+                    "else " +
+                    "   return 0 " +
+                    "end";
 
     @Async
     public void reserveCart(String userId, List<CartItem> items) {
         validateUser(userId);
         validateItems(items);
 
-        validateStockAvailability(items);
+        DefaultRedisScript<Long> script = new DefaultRedisScript<>(RESERVE_SCRIPT, Long.class);
 
-        String userKey = USER_PREFIX + userId;
-        Map<String, String> reservations = createReservationMap(items);
+        for (CartItem item : items) {
+            String productId = item.getProduct().getProductId();
+            int quantity = item.getQuantity();
 
-        redis.opsForHash().putAll(userKey, reservations);
-        redis.expire(userKey, TTL);
-        updateProductCounters(items);
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new ProductNotFoundException("Product not found: " + productId));
+
+            String productKey = PRODUCT_RESERVATION_PREFIX + productId;
+            String userProductKey = USER_RESERVATION_PREFIX + userId + ":" + productId;
+
+            List<String> keys = Arrays.asList(productKey, userProductKey);
+            Object[] args = {
+                    String.valueOf(quantity),
+                    String.valueOf(product.getAvailableQuantity()),
+                    String.valueOf(TTL.getSeconds())
+            };
+
+            Long result = redis.execute(script, keys, args);
+
+            if (result == 0) {
+                cleanupPartialReservations(userId, items);
+                throw new InsufficientQuantityException("Not enough stock for product: " + productId);
+            }
+        }
     }
 
     @Transactional
@@ -50,18 +82,35 @@ public class ReservationService {
         validateUser(userId);
         validateItems(items);
 
-        String userKey = USER_PREFIX + userId;
-        Map<Object, Object> reserved = redis.opsForHash().entries(userKey);
+        for (CartItem item : items) {
+            String productId = item.getProduct().getProductId();
+            String userProductKey = USER_RESERVATION_PREFIX + userId + ":" + productId;
+            String productKey = PRODUCT_RESERVATION_PREFIX + productId;
 
-        if (reserved.isEmpty()) {
-            throw new ReservationExpiredException();
+            String reservedQtyStr = redis.opsForValue().get(userProductKey);
+            if (reservedQtyStr == null) {
+                throw new ReservationExpiredException();
+            }
+
+            int reservedQty = Integer.parseInt(reservedQtyStr);
+
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new ProductNotFoundException(productId));
+
+            if (product.getAvailableQuantity() < reservedQty) {
+                throw new InsufficientQuantityException("Not enough stock for product: " + productId);
+            }
+
+            product.setAvailableQuantity(product.getAvailableQuantity() - reservedQty);
+            productRepository.save(product);
+
+            redis.opsForValue().decrement(productKey, reservedQty);
+            redis.delete(userProductKey);
         }
+    }
 
-        updateRedisCounters(items, reserved);
-
-        updateDatabase(items, reserved);
-
-        redis.delete(userKey);
+    public void cancelReservation(String userId, List<CartItem> items) {
+        releaseReservations(userId,items);
     }
 
     public int totalReserved(String productId) {
@@ -69,8 +118,12 @@ public class ReservationService {
             throw new ProductNotFoundException("Product ID cannot be empty");
         }
 
-        String value = redis.opsForValue().get(PRODUCT_PREFIX + productId);
+        String value = redis.opsForValue().get(PRODUCT_RESERVATION_PREFIX + productId);
         return value != null ? Integer.parseInt(value) : 0;
+    }
+
+    private void cleanupPartialReservations(String userId, List<CartItem> items) {
+        releaseReservations(userId,items);
     }
 
     private void validateUser(String userId) {
@@ -83,79 +136,25 @@ public class ReservationService {
         if (items == null || items.isEmpty()) {
             throw new EmptyCartException();
         }
-    }
-
-    private void validateStockAvailability(List<CartItem> items) {
-        for (CartItem cartItem : items) {
-            String productId = cartItem.getProduct().getProductId();
-            int quantity = cartItem.getQuantity();
-
-            Product product = productRepository.findById(productId)
-                    .orElseThrow(() -> new ProductNotFoundException("Product not found: " + productId));
-
-            int currentlyReserved = totalReserved(productId);
-
-            if (product.getAvailableQuantity() - currentlyReserved < quantity) {
-                throw new InsufficientQuantityException("Not enough stock for product: " + productId);
+        for (CartItem item : items) {
+            if (item.getQuantity() <= 0) {
+                throw new NegativeQuantityException("Quantity must be positive");
             }
         }
     }
 
-    private Map<String, String> createReservationMap(List<CartItem> items) {
-        return items.stream().collect(Collectors.toMap(
-                cartItem -> {
-                    String productId = cartItem.getProduct().getProductId();
-                    if (productId == null || productId.trim().isEmpty()) {
-                        throw new ProductNotFoundException("Product ID cannot be empty");
-                    }
-                    return productId;
-                },
-                cartItem -> {
-                    int quantity = cartItem.getQuantity();
-                    if (quantity <= 0) {
-                        throw new NegativeQuantityException("Quantity must be positive");
-                    }
-                    return String.valueOf(quantity);
-                }
-        ));
-    }
-
-    private void updateProductCounters(List<CartItem> items) {
-        items.forEach(cartItem -> {
-            String productId = cartItem.getProduct().getProductId();
-            redis.opsForValue().increment(PRODUCT_PREFIX + productId, cartItem.getQuantity());
-        });
-    }
-
-    private void updateRedisCounters(List<CartItem> items, Map<Object, Object> reserved) {
+    private void releaseReservations(String userId, List<CartItem> items){
         for (CartItem item : items) {
             String productId = item.getProduct().getProductId();
-            String quantityString = (String) reserved.get(productId);
+            String userProductKey = USER_RESERVATION_PREFIX + userId + ":" + productId;
+            String productKey = PRODUCT_RESERVATION_PREFIX + productId;
 
-            if (quantityString == null) {
-                throw new ReservationExpiredException();
+            String reservedQtyStr = redis.opsForValue().get(userProductKey);
+            if (reservedQtyStr != null) {
+                int reservedQty = Integer.parseInt(reservedQtyStr);
+                redis.opsForValue().decrement(productKey, reservedQty);
+                redis.delete(userProductKey);
             }
-
-            int reservedQuantity = Integer.parseInt(quantityString);
-            redis.opsForValue().decrement(PRODUCT_PREFIX + productId, reservedQuantity);
-        }
-    }
-
-    private void updateDatabase(List<CartItem> items, Map<Object, Object> reserved) {
-        for (CartItem item : items) {
-            String productId = item.getProduct().getProductId();
-            String qtyStr = (String) reserved.get(productId);
-            int reservedQty = Integer.parseInt(qtyStr);
-
-            Product product = productRepository.findById(productId)
-                    .orElseThrow(() -> new ProductNotFoundException(productId));
-
-            if (product.getAvailableQuantity() < reservedQty) {
-                throw new InsufficientQuantityException(productId);
-            }
-
-            product.setAvailableQuantity(product.getAvailableQuantity() - reservedQty);
-            productRepository.save(product);
         }
     }
 }

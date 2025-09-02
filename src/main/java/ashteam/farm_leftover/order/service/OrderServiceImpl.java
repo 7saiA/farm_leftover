@@ -100,9 +100,6 @@ public class OrderServiceImpl implements OrderService{
                     Product product = productRepository.findById(cartItem.getProduct().getProductId())
                             .orElseThrow(() -> new ProductNotFoundException(cartItem.getProduct().getProductId()));
 
-                    product.setAvailableQuantity(product.getAvailableQuantity() - cartItem.getQuantity());
-                    productRepository.save(product);
-
                     OrderItem orderItem = OrderItem.fromCartItem(product, cartItem.getQuantity());
                     orderItem.setOrder(order);
                     return orderItem;
