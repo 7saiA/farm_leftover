@@ -57,5 +57,10 @@ public class OrderController {
         return orderService.confirmPickupOrComplete(principal.getName(), orderId);
     }
 
+    @DeleteMapping("/cancel-reservation")
+    public void cancelReservation(Principal principal){
+        orderService.cancelReservation(principal.getName());
+    }
+
 
 }

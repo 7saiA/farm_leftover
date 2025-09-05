@@ -21,4 +21,6 @@ public interface OrderService {
     OrderResponseDto confirmPickupOrComplete(String login, String orderId);
 
     OrderResponseDto placeOrder(String login);
+
+    void cancelReservation(String login);
 }

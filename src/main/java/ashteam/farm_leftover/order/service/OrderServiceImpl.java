@@ -116,6 +116,19 @@ public class OrderServiceImpl implements OrderService{
         return modelMapper.map(order, OrderResponseDto.class);
     }
 
+    @Override
+    public void cancelReservation(String login) {
+        UserAccount user = userAccountRepository.findById(login)
+                .orElseThrow(UserNotFoundException::new);
+
+        Cart cart = user.getCart();
+        if (cart == null || cart.getItems().isEmpty()) {
+            throw new EmptyCartException();
+        }
+
+        reservationService.cancelReservation(user.getLogin(),cart.getItems());
+    }
+
     @Transactional(readOnly = true)
     @Override
     public OrderResponseDto getOrder(String login, String orderId) {

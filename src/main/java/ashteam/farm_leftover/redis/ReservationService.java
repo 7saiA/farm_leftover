@@ -25,7 +25,7 @@ public class ReservationService {
     private final StringRedisTemplate redis;
     private final ProductRepository productRepository;
 
-    private static final Duration TTL = Duration.ofMinutes(5);
+    private static final Duration TTL = Duration.ofMinutes(3);
     private static final String USER_RESERVATION_PREFIX = "reservation:user:";
     private static final String PRODUCT_RESERVATION_PREFIX = "reservation:product:";
 
