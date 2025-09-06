@@ -34,8 +34,4 @@ public class Cart {
                 .map(CartItem::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
-
-    public boolean addProductFromFarmCheck(UserAccount productFarm){
-        return this.farm == null || this.farm.equals(productFarm);
-    }
 }
