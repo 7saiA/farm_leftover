@@ -141,6 +141,7 @@ public class ProductServiceImpl implements ProductService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Iterable<ProductDto> searchProducts(String query) {
         return productRepository.findByProductNameContainingIgnoreCase(query)

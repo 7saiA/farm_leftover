@@ -12,13 +12,16 @@ import ashteam.farm_leftover.user.model.UserAccount;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.util.Map;
 
 @RestController
-@RequestMapping("paypal")
+@RequestMapping("/paypal")
 @AllArgsConstructor
 public class PayPalController {
     final PayPalService payPalService;
@@ -41,23 +44,25 @@ public class PayPalController {
         String description = "Farm Leftover Reservation #" + cart.getCartId();
 
         String approvalUrl = payPalService.createPayment(
-          totalPrice,description,payPalUrlsDto.getCancelUrl(),payPalUrlsDto.getSuccessUrl() + "?cartId=" + cart.getCartId()
+          totalPrice,description,payPalUrlsDto.getCancelUrl(),payPalUrlsDto.getSuccessUrl()
         );
-        return new PayPalApprovalDto(cart.getCartId(),approvalUrl);
+        return new PayPalApprovalDto(approvalUrl);
     }
 
     @GetMapping("/success")
-    public String paySuccess(Principal principal,@RequestParam String paymentId, @RequestParam String payerId){
+    public ResponseEntity<Map<String, String>> paySuccess(Principal principal, @RequestParam String paymentId, @RequestParam String payerId){
         try {
             Payment payment = payPalService.executePayment(paymentId,payerId);
             if("approved".equals(payment.getState())){
                 orderService.placeOrder(principal.getName());
-                return "Payment successful!";
+                return ResponseEntity.ok(Map.of("message", "Payment successful!"));
             }
         }catch (PayPalRESTException e){
-            return "Payment failed: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Payment failed: " + e.getMessage()));
         }
-        return "Payment failed";
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("message", "Payment not approved"));
     }
 
     @GetMapping("/cancel")

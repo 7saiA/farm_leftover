@@ -10,6 +10,5 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PayPalApprovalDto {
-    String cartId;
     String approvalUrl;
 }

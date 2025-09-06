@@ -61,6 +61,4 @@ public class OrderController {
     public void cancelReservation(Principal principal){
         orderService.cancelReservation(principal.getName());
     }
-
-
 }
