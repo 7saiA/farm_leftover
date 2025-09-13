@@ -72,8 +72,6 @@ public class OrderServiceImpl implements OrderService{
         }
 
         reservationService.reserveCart(login,cart.getItems());
-
-        cartRepository.save(cart);
     }
 
     @Transactional
