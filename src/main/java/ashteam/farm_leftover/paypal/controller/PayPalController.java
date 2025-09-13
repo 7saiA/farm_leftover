@@ -66,8 +66,8 @@ public class PayPalController {
     }
 
     @GetMapping("/cancel")
-    public String payCancel(Principal principal){
+    public ResponseEntity<Map<String, String>> payCancel(Principal principal){
         orderService.cancelReservation(principal.getName());
-        return "Payment cancelled";
+        return ResponseEntity.ok(Map.of("message", "Payment cancelled"));
     }
 }
