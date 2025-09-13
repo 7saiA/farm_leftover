@@ -56,12 +56,6 @@ public class ServiceConfiguration {
                    mapper.map(Order::getItems, OrderResponseDto::setItems);
                 });
 
-        modelMapper.typeMap(OrderItem.class, OrderItemDto.class)
-                .addMappings(mapper -> {
-                   mapper.map(orderItem -> orderItem.getProduct().getProductId(), OrderItemDto::setProductId);
-                   mapper.map(OrderItem::getProductName, OrderItemDto::setProductName);
-                   mapper.map(OrderItem::getUnit, OrderItemDto::setUnit);
-                });
         return modelMapper;
     }
 

@@ -37,8 +37,6 @@ public class Product {
     LocalDateTime createdAt;
     @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE)
     List<CartItem> cartItems = new ArrayList<>();
-    @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE)
-    List<OrderItem> orderItems = new ArrayList<>();
 
     public Product(String productName, BigDecimal pricePerUnit, String unit, Integer availableQuantity) {
         this.productName = productName;

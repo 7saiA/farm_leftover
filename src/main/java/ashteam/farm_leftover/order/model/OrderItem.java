@@ -26,11 +26,6 @@ public class OrderItem {
     Order order;
 
     @Setter
-    @ManyToOne
-    @JoinColumn(name = "product_id")
-    Product product;
-
-    @Setter
     String imgUrl;
     @Setter
     String productName;
@@ -45,7 +40,6 @@ public class OrderItem {
 
     public static OrderItem fromCartItem(Product product, Integer quantity){
         OrderItem orderItem = new OrderItem();
-        orderItem.setProduct(product);
         orderItem.setImgUrl(product.getImgUrl());
         orderItem.setProductName(product.getProductName());
         orderItem.setUnit(product.getUnit());
