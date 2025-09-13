@@ -4,6 +4,7 @@ import ashteam.farm_leftover.auth.dto.exceptions.UserNotFoundException;
 import ashteam.farm_leftover.cart.dao.CartRepository;
 import ashteam.farm_leftover.cart.dto.exception.EmptyCartException;
 import ashteam.farm_leftover.cart.model.Cart;
+import ashteam.farm_leftover.order.dao.OrderItemRepository;
 import ashteam.farm_leftover.order.dao.OrderRepository;
 import ashteam.farm_leftover.order.dto.CancellationReasonDto;
 import ashteam.farm_leftover.order.dto.OrderResponseDto;
@@ -36,7 +37,8 @@ public class OrderServiceImpl implements OrderService{
     final OrderRepository orderRepository;
     final ProductRepository productRepository;
     final CartRepository cartRepository;
-    private final ReservationService reservationService;
+    final ReservationService reservationService;
+    final OrderItemRepository orderItemRepository;
 
     @Transactional(readOnly = true)
     @Override
@@ -100,6 +102,7 @@ public class OrderServiceImpl implements OrderService{
 
                     OrderItem orderItem = OrderItem.fromCartItem(product, cartItem.getQuantity());
                     orderItem.setOrder(order);
+                    orderItemRepository.save(orderItem);
                     return orderItem;
                 }).toList();
 
